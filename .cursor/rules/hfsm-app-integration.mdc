@@ -1,0 +1,39 @@
+---
+description: App-level HFSM integration (main.gd bootstrap)
+globs: "{src/game/main.gd,src/game/hfsm/**/*,src/game/scenes/app_root/**/*}"
+alwaysApply: false
+---
+
+# App HFSM integration
+
+## Wiring
+
+- Entry: `main.tscn` → `src/game/main.gd` boots HFSM (host for `HfsmSceneRegistry`)
+- Config: `@export_file` → `src/game/hfsm/app_hfsm.json`
+- Paths: `HfsmScenePaths` (`class_name`) child on Main; `SCENES` filled in `_ready` from `@export_category("Scenes")`
+
+## Scenes (owned by HFSM)
+
+| JSON id | Scene |
+|---------|--------|
+| `app_root` | `src/game/scenes/app_root/root.tscn` |
+| `menu` | `src/game/scenes/menu/menu.tscn` |
+| `game` | `src/game/scenes/game/game.tscn` |
+| `post_battle` | `src/game/scenes/post_battle/post_battle.tscn` |
+
+- Bridge: `RootEvents.ev_*` → `hfsm.add_event(...)` lives on **app_root** — not on `main.gd`
+- App root is a normal `IScene`
+
+## Events
+
+| Resource signal | HFSM event |
+|-----------------|------------|
+| `ev_start_game` | `ev.start_game` |
+| `ev_exit_game` | `ev.exit_game` |
+| `ev_return_to_menu` | `ev.open_menu` |
+
+## Must
+
+- Keep `GameManager` battle FSM separate from app HFSM
+- New app phase → JSON `scene` + `HfsmScenePaths` export + `.tscn`
+- Do not put gameplay logic in `main.gd`

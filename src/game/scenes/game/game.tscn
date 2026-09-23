@@ -1,0 +1,104 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/game/scenes/game/game.gd" id="1"]
+[ext_resource type="Resource" path="res://src/game/scenes/app_root/root_events.tres" id="2"]
+[ext_resource type="Resource" path="res://src/game/scenes/game/game_events.tres" id="3"]
+[ext_resource type="Resource" path="res://src/common/game_config_default.tres" id="4"]
+[ext_resource type="Script" path="res://src/game/scenes/game/game_logic/game_manager/game_manager.gd" id="5"]
+[ext_resource type="Script" path="res://src/game/scenes/game/game_logic/game_manager/game_states/countdown_state.gd" id="6"]
+[ext_resource type="Script" path="res://src/game/scenes/game/game_logic/game_manager/game_states/game_state.gd" id="7"]
+[ext_resource type="Script" path="res://src/game/scenes/game/game_logic/game_manager/game_states/end_game_state.gd" id="8"]
+[ext_resource type="Script" path="res://src/features/joystick/slingshot_joystick.gd" id="9"]
+
+[node name="Game" type="Node" node_paths=PackedStringArray("game_manager")]
+script = ExtResource("1")
+root_events = ExtResource("2")
+game_events = ExtResource("3")
+game_config = ExtResource("4")
+game_manager = NodePath("GameManager")
+
+[node name="World" type="Node3D" parent="."]
+
+[node name="AimArrow" type="MeshInstance3D" parent="World"]
+visible = false
+
+[node name="GameManager" type="Node" parent="." node_paths=PackedStringArray("states")]
+script = ExtResource("5")
+game_events = ExtResource("3")
+states = [NodePath("CountDownState"), NodePath("GameState"), NodePath("EndGameState")]
+
+[node name="CountDownState" type="Node" parent="GameManager"]
+script = ExtResource("6")
+
+[node name="GameState" type="Node" parent="GameManager"]
+script = ExtResource("7")
+
+[node name="EndGameState" type="Node" parent="GameManager"]
+script = ExtResource("8")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Margin" type="MarginContainer" parent="HUD"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 64.0
+grow_horizontal = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+
+[node name="TopBar" type="HBoxContainer" parent="HUD/Margin"]
+layout_mode = 2
+
+[node name="LivesLabel" type="Label" parent="HUD/Margin/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "P1: 3❤  |  P2: 3❤"
+
+[node name="Hint" type="Label" parent="HUD/Margin/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "P2: WASD aim + E launch | F attack | G shield"
+horizontal_alignment = 2
+
+[node name="Joystick" type="Control" parent="HUD"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = -240.0
+offset_right = 240.0
+offset_bottom = -40.0
+grow_vertical = 0
+script = ExtResource("9")
+
+[node name="ShieldButton" type="Button" parent="HUD"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -280.0
+offset_top = -150.0
+offset_right = -180.0
+offset_bottom = -50.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+text = "Щит"
+
+[node name="AttackButton" type="Button" parent="HUD"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -170.0
+offset_right = -30.0
+offset_bottom = -50.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 20
+text = "Атака"

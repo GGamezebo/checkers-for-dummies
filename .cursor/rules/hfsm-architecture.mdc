@@ -1,0 +1,40 @@
+---
+description: HFSM library architecture — modules, transitions, entity/scene bindings
+globs: "core/lib/hfsm/**/*"
+alwaysApply: false
+---
+
+# HFSM library (`core/lib/hfsm`)
+
+Port from quizmatik / Library HFSM. Keep transition semantics in sync. **No this-game types here.**
+
+## Modules
+
+| File | Role |
+|------|------|
+| `state_node.gd` / `state_tree.gd` | Config data — bindings + optional `scene` |
+| `loader.gd` | JSON/dict → tree; reserved: `enter`, `leave`, `consume`, `states`, `scene` |
+| `hfsm.gd` | Queue, transitions, entity + scene lifecycle |
+| `binding_registry.gd` | Light BoundEntity lifecycle |
+| `scene_registry.gd` | Godot scene mount (`Node`); async load |
+| `bound_entity.gd` | Base: `sync_hfsm` / `on_event` / `deinit` / `add_event` |
+| `iscene.gd` | Base Node: `initialize` / `deinit` / `on_event` (+ isolated F6) |
+| `event.gd` / `utils.gd` / `consts.gd` | Event + pattern helpers |
+
+## Public API
+
+- `HFSM.new(tree, entities, scene_config={})`
+  - `entities`: `{ slot: { name: Script } }`
+  - `scene_config`: `{ host: Node, paths: {id: path}, loading_screen?, min_load_time? }`
+- `add_event`, `get_active_path()`, `get_mounted_scene(state)`, `get_binding`, `reset()`, `clear()`
+
+## Scene lifecycle
+
+- Mounted nodes extend `IScene` (`initialize` / `deinit` / `on_event`)
+- State `scene: { id, loading_screen, async_loading, on_event }` → mount under nearest ancestor scene, `initialize(data)`, optional follow-up event
+- on leave: `deinit()` + `queue_free`
+
+## Must / avoid
+
+- No `Pawn` / `GameConfig` / project scenes in `core/lib/hfsm`
+- Do not change transition semantics casually (post-order, consume, sys.enter)

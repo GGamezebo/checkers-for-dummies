@@ -1,0 +1,36 @@
+---
+description: HFSM JSON config schema and conventions
+globs: "**/*hfsm*.json"
+alwaysApply: false
+---
+
+# HFSM JSON config
+
+## Shape
+
+- Exactly **one** root state key per file
+- Reserved keys: `enter`, `leave`, `consume`, `states`, `scene`
+- Any other key = **binding slot** → entity name string
+
+## `scene`
+
+```json
+"scene": { "id": "game", "loading_screen": false, "async_loading": true, "on_event": "ev.open_menu" }
+```
+
+- `id` → host path map (`HfsmScenePaths.SCENES`)
+- `loading_screen` optional (default `false`)
+- `async_loading` optional (default `true`); `false` → sync one-frame load
+- `on_event` optional — fired right after scene `initialize(data)`
+
+## Events
+
+- Prefer `ev.*`; omit `enter` → `["sys.enter"]`
+- Wildcards: trailing `*` only
+
+## Design
+
+- Heavy screens: `scene`; light logic: BoundEntity slots when needed
+- Prefer shallow trees (current app: App → Menu | Battle | PostBattle)
+- Do not put HUD buttons / dialogs in HFSM — keep them inside the mounted scene
+- Platform hooks (web/Yandex): add nested states later if needed; keep out of `core/`

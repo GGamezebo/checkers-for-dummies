@@ -1,0 +1,35 @@
+---
+description: GameConfig and shared Resource conventions
+globs: "src/common/**/*"
+alwaysApply: false
+---
+
+# Config & shared resources
+
+## GameConfig
+
+- Schema: `src/common/game_config.gd`
+- Default instance: `src/common/game_config_default.tres`
+- Groups: Pawn, Shield, Attack, Stun/Flight, Player, Arena, Impulse modifiers
+- Battle scenes `@export` the default `.tres` for isolated F6; parents may override later via `ResourceUtils.update_resource`
+
+## Event buses
+
+| Resource | Path | Role |
+|----------|------|------|
+| `RootEvents` | `src/game/scenes/app_root/root_events.tres` | App navigation |
+| `GameEvents` | `src/game/scenes/game/game_events.tres` | In-battle broadcasts |
+
+- One live `.tres` instance shared via `@export` — do not `Resource.new()` parallel buses
+- Signals named `ev_*`
+
+## Must
+
+- New tunable → field on `GameConfig` (+ sensible default), not a magic number in a feature
+- Bump docs in `concepts/ART_DIRECTION.md` if interaction-table defaults change meaningfully
+- Keep `.tres` and `.gd` schema in sync
+
+## Avoid
+
+- Autoload EventBus
+- Editing “live” battle config permanently for content that should be defaults only

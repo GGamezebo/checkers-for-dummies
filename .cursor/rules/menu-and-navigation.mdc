@@ -1,0 +1,40 @@
+---
+description: Menu, RootEvents navigation, and post-battle rules
+globs: "{src/game/scenes/menu/**/*,src/game/scenes/app_root/**/*,src/game/scenes/post_battle/**/*,core/lib/window_stack_manager/**/*}"
+alwaysApply: false
+---
+
+# Menu & navigation
+
+## Layers
+
+1. **Scenes** (Menu / Game / PostBattle) — only via `RootEvents` → HFSM
+2. **Full-screen windows** — `WindowStackManager` when menu grows (not required yet)
+3. **Dialogs/overlays** — NOT on the window stack
+
+## Current app
+
+- Menu: play CTA → `root_events.ev_start_game.emit({})`
+- PostBattle: again → `ev_start_game`; menu → `ev_return_to_menu`
+- AppRoot bridges Resource signals to HFSM dotted events
+
+## When adding menu windows
+
+- One `WindowStackManager` under Menu UI
+- Forward: `ButtonWindowTransition`; Back: `ButtonWindowBack` / `ui_cancel` (**pop**, don't re-open Main)
+- Optional hooks: `on_window_enter()` / `on_window_exit()`
+- Confirm/pause overlays stay **off** the stack
+
+## Placement
+
+- Menu scene → `src/game/scenes/menu/`
+- Results → `src/game/scenes/post_battle/`
+- Shared account/progress (when added) → `src/game/account/` wired in `app_root/`
+- Stack helpers → `core/lib/window_stack_manager/`
+
+## Avoid
+
+- Second navigation router beside HFSM + (future) `WindowStackManager`
+- Loading `Game` scene from menu scripts directly
+- Putting confirm dialogs on the full-screen stack
+- Building whole window UI trees in GDScript when a `.tscn` works

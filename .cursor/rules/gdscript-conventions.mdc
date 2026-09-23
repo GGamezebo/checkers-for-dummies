@@ -1,0 +1,61 @@
+---
+description: GDScript conventions — signals, lifecycle, wiring
+globs: "**/*.{gd,tscn}"
+alwaysApply: false
+---
+
+# GDScript conventions
+
+## Avoid brittle `res://` paths
+
+- Prefer `class_name` for shared scripts — call by type, no `preload("res://...")`
+- Prefer `@export` / `@export_file` / PackedScene refs set in the editor
+- Prefer relative `preload("sibling.gd")` only when files must stay colocated
+- Hardcoded `res://...` OK only for rare path maps (e.g. HFSM scene id → `.tscn`)
+
+## Naming
+
+- Signals: `ev_*` (`ev_start_game`, `ev_pawn_died`, `ev_charges_changed`)
+- Files: `snake_case.gd`; scene colocated (`foo.gd` + `foo.tscn`)
+- Types: `PascalCase` + `class_name` when shared
+- FSM state IDs: `static func get_state() -> String`
+
+## Patterns
+
+- Wire dependencies with `@export` / `@export_category` (editor-first)
+- **UI in the editor**: add/move/style nodes in `.tscn`; code updates state
+- Pure logic → `RefCounted` (`CombatResolver`); Nodes stay thin
+- Signal subscriptions → `EventListener`; tear down in `deinit()` / `_exit_tree`
+- Apply config copies with `ResourceUtils.update_resource()` when overriding live Resources
+- Spawn: `PackedScene.instantiate()`; prefer deferred add when colliding with physics setup
+- Extensible entities: nested components (see `Pawn.MovementComponent`, `ShieldEntity`, `AttackEntity`)
+
+## Must
+
+- Prefix new cross-object signals with `ev_`
+- Tear down listeners on context/FSM leave
+- Use existing 3D physics layers: pawn=1, attack=2, shield=3, barrier=4, abyss=5, world=6
+- Use InputMap actions (`attack`, `shield`) + touch joystick — support Mobile + desktop
+- New controls/UI must be usable with fingers on landscape phone
+
+## Layers
+
+- Feature code stays inside `src/features/{name}/`; expose signals/`setup`, not cross-feature internals
+- `core/` code must not reference `src/` or this-game types
+- Scenes orchestrate; they don't absorb feature implementation
+
+## Scene isolation
+
+- Every `.tscn` must run isolated (editor F6) without crashes
+- Required data lives in exported `.tres` defaults on the scene
+- Parents override via events → `initialize`
+- Do not hard-require parent context, autoloads, or sibling scenes to boot
+
+## Avoid
+
+- Autoloads for new game flow (use `RootEvents` / `GameEvents` Resources)
+- Feature A importing Feature B internals (compose in game scene)
+- Putting project-specific types into `core/`
+- Building full menus/HUD programmatically when a `.tscn` would do
+- New parallel FSM unless existing `core/lib/fsm` cannot fit
+- Drive-by renames without explicit request

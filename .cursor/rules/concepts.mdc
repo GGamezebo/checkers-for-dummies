@@ -1,0 +1,24 @@
+---
+description: concepts/ is AI design reference only — never used by the game or by development
+alwaysApply: true
+---
+
+# `concepts/` — AI design reference only
+
+`concepts/` exists so the AI can **look** at frames + `ART_DIRECTION.md` and **match** layout, combat table, and mood. It is **not** part of the game or of development.
+
+## Must
+
+- Before changing arena/HUD/combat look or interaction rules, **read** `concepts/ART_DIRECTION.md` and relevant frames
+- Ship playable art only under `assets/` or colocated in `src/` (features / scenes / `src/ui/`)
+- Keep Godot blind to the folder: `concepts/.gdignore` (+ export `exclude_filter` includes `concepts/*` when presets exist)
+
+## Never
+
+- `res://concepts/...` in `.tscn`, `.tres`, `.gd`, preload, `@export`, or `ResourceLoader`
+- Copy, move, or generate **into the running game** from `concepts/`
+- Put game scenes, scripts, `.tres`, or runtime audio in `concepts/`
+- Assign concept files in the Godot inspector
+- Treat `concepts/` as a texture pack or shared `assets/` stand-in
+
+If a visual is needed in play: recreate or place a **separate** file under `assets/` or the feature/scene folder. Leave `concepts/` as look/design reference only.

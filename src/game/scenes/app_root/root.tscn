@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/game/scenes/app_root/root.gd" id="1"]
+[ext_resource type="Resource" path="res://src/game/scenes/app_root/root_events.tres" id="2"]
+
+[node name="AppRoot" type="Node"]
+script = ExtResource("1")
+root_events = ExtResource("2")

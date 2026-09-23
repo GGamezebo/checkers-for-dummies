@@ -1,0 +1,48 @@
+---
+description: Battle loop, combat, arena, and GameScene change rules
+globs: "src/game/scenes/game/**/*"
+alwaysApply: false
+---
+
+# Game scene / battle
+
+## Ownership
+
+- Orchestration: `game.gd` builds arena, spawns `PlayerController`s, wires HUD
+- Live `game_config_default.tres` on the scene = **standalone defaults** (must F6 alone)
+- States: `GameManager` FSM only (`countdown` / `game` / `end_game`)
+- Combat table: `src/features/combat/combat_resolver.gd` + `interaction_kind.gd`
+- Features: compose from `src/features/` — scene wires and reacts to `ev_*`
+
+## Change guide
+
+| Goal | Touch |
+|------|--------|
+| Win/lose / transitions | FSM states + `FSMGameEvents` + `GameManager.request_end` |
+| Lives / respawn | `PlayerController` |
+| Pawn HP / knockback / flight / stun | `Pawn` |
+| Interaction table (pawn/sword/shield) | `CombatResolver` (+ update concepts) |
+| Slingshot move | `Pawn.apply_slingshot` + `SlingshotJoystick` |
+| Attack / shield | `AttackEntity` / `ShieldEntity` |
+| Arena size / barrier ring | `Arena` + `GameConfig` arena/barrier fields |
+| Barrier damage / bounce | `BarrierSegment` |
+| Fall death | `Abyss` |
+| HUD only | `game.tscn` HUD nodes — listen to controller/`GameEvents`, don't own combat |
+
+## Combat contracts (critical)
+
+- Final knockback: `base_impulse * (1 + HP/100) * impulse_mod`
+- Impulse vector: from attacker center → defender center
+- HP **accumulates** damage (higher HP → harder knockback); death = abyss, not HP=0
+- Flight: enemy knockback raised speed above `pawn_min_flight_speed` → blocks input until slow
+- Stun: queued if in flight; applied after leaving flight; timer does not reset on new flight
+- Shield block: active + `attack_dir · forward <= 0` → no damage, spend charge
+- Barrier damage only if `pawn.was_knocked_by_enemy`; amount ≈ impact speed
+- After barrier bounce: speed `*= barrier_elasticity`
+
+## Constraints
+
+- Exit battle via `root_events.ev_exit_game` with `{ "winner_id": int }`
+- Speeds / charges / damage / arena size come from `GameConfig`, not hardcode
+- Prefer small `RefCounted` helpers over growing `game.gd`
+- Touch joystick + attack/shield buttons required; keyboard fallback OK for P2/dev

@@ -1,0 +1,117 @@
+---
+description: Checkers-for-dummies architecture map — where code lives and how systems connect
+alwaysApply: true
+---
+
+# Architecture (Checkers for Dummies / Godot 4.7)
+
+Top-down 3D arena duel: slingshot pawns, shield/attack, destructible barriers. Prefer the smallest change that fits existing patterns. Do not invent parallel systems.
+
+Godot 4.x only: `@export`/`@onready`, `signal.connect(cb)`, `instantiate()`, typed GDScript, `Input` actions.
+
+## Stable references (critical)
+
+Avoid hardcoded `res://` strings that break when files move.
+
+- Prefer `class_name` + typed use over `preload("res://path/script.gd")`
+- Prefer `@export` / `@export_file` / PackedScene assigned in the editor
+- Do not add new path constants for scripts/resources unless no other option (document why)
+
+## Target platforms (critical)
+
+Ship and play well on **Mobile** (primary: touch joystick + buttons), **desktop**, and later **HTML5**.
+
+- Design every control/UI for comfortable **touch first**, then mouse/keyboard
+- Prefer InputMap actions (`attack`, `shield`, `ui_*`) over hard-coded keys; on-screen joystick is the primary move input
+- UI: readable at phone landscape, large finger hit targets; still clean on 16:9 desktop
+- Performance: mobile renderer — keep physics/FX light
+- Platform-specific code: isolate behind `OS.has_feature(...)` — do not fork gameplay
+
+## #1 Scene isolation (critical)
+
+**Every scene must open and run alone in the editor without crashes**, with no parent context required.
+
+- Bake safe defaults into **Resource files** (`.tres`) and `@export` them on the scene
+- Parents **override** those defaults at runtime via events / `initialize(data)`
+- Never assume “only runs under `AppRoot` / `main.gd`”: no required autoloads, no required sibling scenes
+- When adding a dependency, ask: *can this scene still F6/run isolated?*
+
+## Entry & folders
+
+| Path | Role |
+|------|------|
+| `main.tscn` → `src/game/main.gd` | HFSM bootstrap host |
+| `src/game/scenes/` | Screens: `app_root`, `menu`, `game`, `post_battle` |
+| `src/features/` | Isolated gameplay features (pawn, shield, attack, arena, …) |
+| `src/common/` | Project-shared Resources (`GameConfig`) |
+| `src/ui/` | Shared UI widgets (when added) |
+| `core/` | Project-agnostic code only (no this-game types/scenes) |
+| `assets/` | Runtime shared art/audio |
+| `concepts/` | AI style/design reference only — never used by the game; see `concepts.mdc` |
+
+Ignore for gameplay work: `addons/`, `.godot/`, `.cursor/`.
+Export never packs: `concepts/`, `.cursor/`, `.godot/`, `.git/` — keep `concepts/.gdignore`.
+
+## Layer contracts
+
+### `src/features/` — isolated features
+- One folder = one feature (`pawn`, `shield`, `attack`, `arena`, `barrier`, `abyss`, `joystick`, `player_controller`, `combat`).
+- Keep **almost all dependencies inside** the feature.
+- Talk outside via a **small public surface** (signals `ev_*`, `initialize`/`setup`, exported PackedScenes).
+- Features must **not** import other features' internals (compose in the game scene instead).
+- Exception: thin shared combat types (`InteractionKind`, `CombatResolver`) live in `src/features/combat/` and may be used by pawn/shield/attack.
+
+### `core/` — project-agnostic
+- FSM, HFSM, `EventListener`, shackers, window stack, `ResourceUtils`.
+- **Must not** depend on `src/` (no `GameConfig`, `Pawn`, project scenes).
+- If code needs this-game types → it belongs in `src/`, not `core/`.
+
+### `src/game/scenes/` — orchestration only
+- Wire features + shared config; own flow/FSM/UI for that screen.
+- Do not dump reusable feature guts here — extract to `src/features/`.
+
+## UI — editor-first (critical)
+
+- Prefer building UI **in the Godot editor** (nodes in `.tscn`).
+- Scripts: bind `@export` refs, update state, connect signals.
+- Dynamic lists: template `.tscn` + `instantiate()` — avoid building UI trees with `*.new()` except rare runtime overlays (aim arrow, debug).
+- OK programmatic exceptions: 3D arena/barrier generation, pawn mesh bootstrap, tiny runtime HUD bits.
+
+## Context flow
+
+```
+Menu --ev.start_game--> Battle --ev.exit_game--> PostBattle
+PostBattle --ev.return_to_menu--> Menu
+PostBattle --ev.start_game--> Battle (retry)
+```
+
+App phases: HFSM (`src/game/hfsm/app_hfsm.json`) via `src/game/main.gd`:
+- `main.gd` only creates HFSM + scene host
+- Root `App` scene id `app_root` → `RootEvents` → `hfsm.add_event`
+- Phase scenes: `menu` / `game` / `post_battle` via `HfsmScenePaths`
+- In-battle: `GameEvents` + `GameManager` FSM (not HFSM)
+
+## Battle loop
+
+`GameManager` FSM: `countdown` → `game` → `end_game` (via `FSMGameEvents`).
+Combat table: `CombatResolver` + `InteractionKind` (pawn / sword / shield).
+Death: fall into `Abyss` (not HP=0). Lives: `PlayerController`. Match ends when a player reaches 0 lives.
+Do not drive win/lose with ad-hoc flags outside the FSM.
+
+## Placement rules
+
+- New isolated gameplay unit → `src/features/{name}/`
+- New screen / flow → `src/game/scenes/{name}/`
+- Project-shared Resource → `src/common/`
+- Shared UI widget → `src/ui/`
+- Generic reusable utility → `core/lib/`
+- Tuning knobs → `GameConfig` (`.gd` + `.tres`), not hardcoded magic numbers in features
+
+## Cheap-change heuristics
+
+1. Match nearest existing file; copy its wiring (`@export`, signals `ev_*`).
+2. Prefer editing one layer: data (`.tres`) → feature → scene orchestration.
+3. Before adding to `core/`: confirm zero `src/` imports.
+4. New scene dependency → default `.tres` on the scene + optional runtime override.
+5. Do not edit `addons/` or binary assets casually; reference `res://` paths.
+6. Interaction-table changes → `CombatResolver` + update `concepts/ART_DIRECTION.md` / interaction mockup if the design changes.
