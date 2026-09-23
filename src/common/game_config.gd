@@ -32,6 +32,16 @@ extends Resource
 @export var player_lives: int = 3
 @export var respawn_delay: float = 1.2
 
+@export_group("AI")
+@export var ai_enabled: bool = true
+@export_range(0.15, 2.0) var ai_think_interval: float = 0.35
+@export_range(0.0, 1.0) var ai_aim_jitter: float = 0.12
+@export_range(0.4, 1.0) var ai_aggression: float = 0.7
+@export_range(0.5, 1.0) var ai_min_sling_power: float = 0.55
+@export var ai_attack_range: float = 1.6
+@export var ai_shield_range: float = 2.2
+@export var ai_edge_margin: float = 1.8
+
 @export_group("Arena")
 @export var arena_half_size: float = 6.0
 @export var barrier_segment_count: int = 16

@@ -23,6 +23,7 @@ alwaysApply: false
 | Pawn HP / knockback / flight / stun | `Pawn` |
 | Interaction table (pawn/sword/shield) | `CombatResolver` (+ update concepts) |
 | Slingshot move | `Pawn.apply_slingshot` + `SlingshotJoystick` |
+| AI opponent | `AiBrain` (`src/features/ai/`) + `GameConfig` AI group |
 | Attack / shield | `AttackEntity` / `ShieldEntity` |
 | Arena size / barrier ring | `Arena` + `GameConfig` arena/barrier fields |
 | Barrier damage / bounce | `BarrierSegment` |

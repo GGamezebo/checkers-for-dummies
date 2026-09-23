@@ -19,6 +19,7 @@ var _arena: Arena
 var _controllers: Array[PlayerController] = []
 var _listener: EventListener = EventListener.new()
 var _match_started: bool = false
+var _ai_brain: AiBrain
 
 
 func initialize(_data: Dictionary) -> void:
@@ -104,6 +105,7 @@ func _style_hud() -> void:
 	var hint := hud.get_node_or_null("Margin/TopBar/Hint") as Label
 	if hint:
 		hint.add_theme_color_override("font_color", NeonPalette.UI_MUTED)
+		hint.text = "vs AI  ·  joystick move  ·  attack / shield"
 	_style_neon_button(attack_btn, NeonPalette.UI_DANGER, "АТАКА")
 	_style_neon_button(shield_btn, NeonPalette.SHIELD, "ЩИТ")
 
@@ -139,24 +141,33 @@ func _setup_players() -> void:
 	joystick.ev_released.connect(func(_v): aim_arrow.visible = false)
 
 	var p2 := PlayerController.new()
-	p2.name = "Player2"
+	p2.name = "Player2AI"
 	add_child(p2)
 	p2.setup(
 		game_config, game_events, world, 1,
 		NeonPalette.P2, Vector3(0, 0.4, -half),
-		null, true
+		null, false
 	)
 	p2.ev_lives_changed.connect(func(_l): _refresh_lives())
 
 	_controllers = [p1, p2]
 
+	if game_config.ai_enabled:
+		_ai_brain = AiBrain.new()
+		_ai_brain.setup(p2, p1, game_config)
+		add_child(_ai_brain)
+
 
 func on_match_start() -> void:
 	_match_started = true
+	if _ai_brain:
+		_ai_brain.set_active(true)
 
 
 func on_match_end(data: Dictionary) -> void:
 	_match_started = false
+	if _ai_brain:
+		_ai_brain.set_active(false)
 	if root_events:
 		root_events.ev_exit_game.emit(data)
 
@@ -177,7 +188,8 @@ func _refresh_lives() -> void:
 		return
 	var parts: PackedStringArray = []
 	for c in _controllers:
-		parts.append("P%d: %d❤" % [c.player_id + 1, c.lives])
+		var tag := "AI" if c.player_id == 1 and game_config.ai_enabled else ("P%d" % (c.player_id + 1))
+		parts.append("%s: %d❤" % [tag, c.lives])
 	lives_label.text = "  |  ".join(parts)
 
 

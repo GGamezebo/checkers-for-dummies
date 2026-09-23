@@ -15,6 +15,7 @@ alwaysApply: false
 | `attack/` | Timed forward collider (sword); reports hits to `Pawn.resolve_interaction` |
 | `combat/` | `InteractionKind` + `CombatResolver` (interaction table) |
 | `player_controller/` | Input → pawn; lives; respawn delay; lose at 0 lives |
+| `ai/` | `AiBrain` — drives P2 controller (sling / attack / shield) |
 | `joystick/` | `SlingshotJoystick` — pull back, release → opposite impulse |
 | `arena/` | Floor + builds barrier ring + abyss |
 | `barrier/` | Segment HP, elasticity bounce, enemy-knock damage only |

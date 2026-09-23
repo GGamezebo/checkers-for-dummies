@@ -10,8 +10,10 @@ Open the project in Godot 4.7+ and press F5 (`main.tscn`).
 
 | Player | Move | Attack | Shield |
 |--------|------|--------|--------|
-| P1 | Virtual joystick (slingshot: pull back → release forward) | Атака button / `F` | Щит button / `G` |
-| P2 | `WASD` aim, `E` launch | `F` | `G` |
+| P1 | Virtual joystick (slingshot: pull back → release forward) | Атака / `F` | Щит / `G` |
+| AI | Auto (sling / attack / shield) | — | — |
+
+Toggle / tune AI in `GameConfig` (`ai_enabled`, aggression, aim jitter, ranges).
 
 ## Architecture
 

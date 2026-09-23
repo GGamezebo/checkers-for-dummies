@@ -59,7 +59,7 @@ text = "P1: 3❤  |  P2: 3❤"
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
-text = "P2: WASD aim + E launch | F attack | G shield"
+text = "vs AI"
 horizontal_alignment = 2
 
 [node name="Joystick" type="Control" parent="HUD"]

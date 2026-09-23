@@ -42,7 +42,7 @@ Ship and play well on **Mobile** (primary: touch joystick + buttons), **desktop*
 |------|------|
 | `main.tscn` → `src/game/main.gd` | HFSM bootstrap host |
 | `src/game/scenes/` | Screens: `app_root`, `menu`, `game`, `post_battle` |
-| `src/features/` | Isolated gameplay features (pawn, shield, attack, arena, …) |
+| `src/features/` | Isolated gameplay features (pawn, shield, attack, arena, ai, …) |
 | `src/common/` | Project-shared Resources (`GameConfig`, `NeonPalette`) |
 | `src/ui/` | Shared UI widgets (when added) |
 | `core/` | Project-agnostic code only (no this-game types/scenes) |
@@ -56,7 +56,7 @@ Export never packs: `concepts/`, `doc/`, `.cursor/`, `.godot/`, `.git/` — keep
 ## Layer contracts
 
 ### `src/features/` — isolated features
-- One folder = one feature (`pawn`, `shield`, `attack`, `arena`, `barrier`, `abyss`, `joystick`, `player_controller`, `combat`).
+- One folder = one feature (`pawn`, `shield`, `attack`, `arena`, `barrier`, `abyss`, `joystick`, `player_controller`, `ai`, `combat`).
 - Keep **almost all dependencies inside** the feature.
 - Talk outside via a **small public surface** (signals `ev_*`, `initialize`/`setup`, exported PackedScenes).
 - Features must **not** import other features' internals (compose in the game scene instead).
