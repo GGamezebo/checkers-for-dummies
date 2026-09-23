@@ -2,6 +2,8 @@
 
 Canonical design reference for the AI. Match this folder before restyling arena, HUD, or combat rules.
 
+**Full game TZ (mechanics):** [`doc/TZ_CORE.md`](../doc/TZ_CORE.md)
+
 **Not shipped.** See `.cursor/rules/concepts.mdc`. Playable art goes under `assets/` or `src/`.
 
 ## Recipe

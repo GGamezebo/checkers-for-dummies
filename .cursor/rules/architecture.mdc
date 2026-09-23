@@ -48,9 +48,10 @@ Ship and play well on **Mobile** (primary: touch joystick + buttons), **desktop*
 | `core/` | Project-agnostic code only (no this-game types/scenes) |
 | `assets/` | Runtime shared art/audio |
 | `concepts/` | AI style/design reference only — never used by the game; see `concepts.mdc` |
+| `doc/` | Project docs (full TZ in Markdown); Godot-blind via `doc/.gdignore` |
 
-Ignore for gameplay work: `addons/`, `.godot/`, `.cursor/`.
-Export never packs: `concepts/`, `.cursor/`, `.godot/`, `.git/` — keep `concepts/.gdignore`.
+Ignore for gameplay work: `addons/`, `.godot/`, `.cursor/`, `doc/`, `concepts/`.
+Export never packs: `concepts/`, `doc/`, `.cursor/`, `.godot/`, `.git/` — keep `concepts/.gdignore`, `doc/.gdignore`.
 
 ## Layer contracts
 

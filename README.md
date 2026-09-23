@@ -21,3 +21,4 @@ Open the project in Godot 4.7+ and press F5 (`main.tscn`).
 - Shared `.tres` buses: `RootEvents`, `GameEvents`, `GameConfig`
 - Agent rules: `.cursor/rules/`
 - Design reference (AI only): `concepts/` — see `concepts/ART_DIRECTION.md`
+- Full game TZ: [`doc/TZ_CORE.md`](doc/TZ_CORE.md)
