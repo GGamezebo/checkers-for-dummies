@@ -33,8 +33,7 @@ func setup(segment_hp: float, elast: float, size: Vector3) -> void:
 	var mesh := BoxMesh.new()
 	mesh.size = size
 	_mesh.mesh = mesh
-	_mat = StandardMaterial3D.new()
-	_mat.albedo_color = Color(0.25, 0.75, 0.35)
+	_mat = NeonPalette.make_emissive(NeonPalette.BARRIER_OK, 0.35)
 	_mesh.material_override = _mat
 	add_child(_mesh)
 	ev_hp_changed.emit(hp, max_hp)
@@ -75,7 +74,14 @@ func _refresh_color() -> void:
 	if _mat == null:
 		return
 	var t := 0.0 if max_hp <= 0.0 else 1.0 - (hp / max_hp)
-	_mat.albedo_color = Color(0.25, 0.75, 0.35).lerp(Color(0.85, 0.2, 0.15), t)
+	var col: Color
+	if t < 0.5:
+		col = NeonPalette.BARRIER_OK.lerp(NeonPalette.BARRIER_MID, t * 2.0)
+	else:
+		col = NeonPalette.BARRIER_MID.lerp(NeonPalette.BARRIER_BAD, (t - 0.5) * 2.0)
+	_mat.albedo_color = col
+	_mat.emission = col.darkened(0.1)
+	_mat.emission_energy_multiplier = lerpf(0.35, 0.7, t)
 
 
 func _destroy() -> void:

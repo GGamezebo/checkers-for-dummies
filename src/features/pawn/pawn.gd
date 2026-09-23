@@ -77,27 +77,48 @@ func _build_visual(config: GameConfig) -> void:
 	mesh_cyl.height = config.pawn_height
 	mesh.mesh = mesh_cyl
 	mesh.position = Vector3(0, config.pawn_height * 0.5, 0)
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = team_color
+	var body_col := Color(team_color.darkened(0.55).r, team_color.darkened(0.55).g, team_color.darkened(0.55).b, 1.0)
+	var mat := NeonPalette.make_emissive(body_col, 0.25)
+	mat.emission = team_color.darkened(0.2)
+	mat.emission_energy_multiplier = 0.45
 	mesh.material_override = mat
 	add_child(mesh)
+
+	# Soft top ring
+	var ring := MeshInstance3D.new()
+	var ring_mesh := TorusMesh.new()
+	ring_mesh.inner_radius = config.pawn_radius * 0.55
+	ring_mesh.outer_radius = config.pawn_radius * 0.85
+	ring_mesh.rings = 12
+	ring_mesh.ring_segments = 24
+	ring.mesh = ring_mesh
+	ring.position = Vector3(0, config.pawn_height + 0.02, 0)
+	ring.material_override = NeonPalette.make_emissive(team_color.darkened(0.15), 0.4)
+	add_child(ring)
 
 	# Forward marker
 	var nose := MeshInstance3D.new()
 	var nose_mesh := BoxMesh.new()
-	nose_mesh.size = Vector3(0.12, 0.12, 0.25)
+	nose_mesh.size = Vector3(0.1, 0.1, 0.28)
 	nose.mesh = nose_mesh
-	nose.position = Vector3(0, config.pawn_height * 0.55, -config.pawn_radius * 0.7)
-	var nose_mat := StandardMaterial3D.new()
-	nose_mat.albedo_color = team_color.lightened(0.35)
-	nose.material_override = nose_mat
+	nose.position = Vector3(0, config.pawn_height * 0.55, -config.pawn_radius * 0.75)
+	nose.material_override = NeonPalette.make_emissive(team_color.lightened(0.1), 0.5)
 	add_child(nose)
+
+	var glow := OmniLight3D.new()
+	glow.light_color = team_color
+	glow.light_energy = 0.35
+	glow.omni_range = 1.8
+	glow.position = Vector3(0, config.pawn_height * 0.7, 0)
+	add_child(glow)
 
 	world_label = Label3D.new()
 	world_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	world_label.font_size = 48
+	world_label.modulate = NeonPalette.UI_TEXT
+	world_label.outline_modulate = NeonPalette.VOID
+	world_label.outline_size = 8
 	world_label.position = Vector3(0, config.pawn_height + 0.55, 0)
-	world_label.modulate = Color.WHITE
 	add_child(world_label)
 	_refresh_label()
 
@@ -198,6 +219,8 @@ func try_shield() -> void:
 
 
 func receive_damage(amount: float, from_pawn: Pawn, impulse_mod: float) -> void:
+	## Per TZ: damage is ADDED to HP (accumulated), then knockback scales with HP.
+	## Death is abyss / lives — not HP reaching zero.
 	if is_dead or amount < 0.0:
 		return
 
@@ -306,10 +329,11 @@ func _refresh_label() -> void:
 		return
 	var flags := ""
 	if is_in_flight:
-		flags += " ✈"
+		flags += " F"
 	if is_stunned:
-		flags += " ⚡"
-	world_label.text = "P%d HP:%.0f%s" % [player_id + 1, hp, flags]
+		flags += " S"
+	# HP here = accumulated damage (scales knockback), not remaining health.
+	world_label.text = "P%d  +%.0f%s" % [player_id + 1, hp, flags]
 
 
 class MovementComponent:

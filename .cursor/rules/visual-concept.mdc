@@ -1,23 +1,20 @@
 ---
-description: Follow concepts/ art and layout direction for arena and HUD
-globs: "{src/game/scenes/**/*,src/ui/**/*,src/features/**/*}"
+description: Follow concepts/ dark-neon art direction for arena and HUD
+globs: "{src/game/scenes/**/*,src/ui/**/*,src/features/**/*,src/common/neon_palette.gd}"
 alwaysApply: false
 ---
 
 # Visual concept
 
-Before changing arena/HUD/controls look, **read** `concepts/ART_DIRECTION.md`. Never wire or ship from `concepts/` — see `concepts.mdc`. Playable art lives under `assets/` or feature folders in `src/`.
+Before changing arena/HUD look, **read** `concepts/ART_DIRECTION.md`. Never wire from `concepts/`. Use `NeonPalette` (`src/common/neon_palette.gd`) for shared colors/materials.
 
 Must match:
 
-- **View:** top-down 3D arena (camera above, slight angle OK)
-- **Arena:** green playable pad; dark **abyss** outside; **barrier** ring on the perimeter (green → yellow/red when damaged → gap when broken)
-- **Pawns:** distinct team colors (e.g. blue / red); clear forward marker
-- **HUD (mobile landscape):** left = slingshot joystick; right = Attack + Shield buttons; top = lives
-- **Aim feedback:** arrow on pawn opposite to joystick pull (length = charge)
-- **Mood:** clean toy/arcade arena — readable silhouettes, high contrast on barriers vs abyss; not neon cyber HUD
+- **Mood:** quiet dark void + muted teal/rose accents — stylish, **not** flashy bloom
+- **Arena:** dark pad; thin low-emission rim; barriers muted cyan → amber → rose when damaged
+- **Pawns:** P1 teal `#3DB8C8`, P2 rose `#C84A6A`; soft emission, weak OmniLight
+- **HUD:** dark panels, thin accent borders (not glowing discs)
+- **Glow:** environment bloom low (`intensity` ~0.35, `bloom` ~0.05); emission energies mostly `< 0.7`
+- **Layout:** joystick left, buttons right (same as mockup)
 
-Reference frames: `concepts/arena_layout_mockup.png`, `concepts/interaction_table.png`.
-
-- Runtime textures (when added): prefer `assets/`; VRAM compressed, no mipmaps on 2D/UI where appropriate
-- Keep finger targets large; joystick + buttons must not overlap the arena center
+Reference frames (layout only): `concepts/arena_layout_mockup.png`, `concepts/interaction_table.png`.

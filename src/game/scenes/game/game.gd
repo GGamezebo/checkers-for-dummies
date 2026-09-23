@@ -53,33 +53,75 @@ func _build_world() -> void:
 	cam.look_at(Vector3(0, 0, 0), Vector3.UP)
 
 	var light := DirectionalLight3D.new()
-	light.rotation_degrees = Vector3(-50, 30, 0)
+	light.rotation_degrees = Vector3(-55, 35, 0)
+	light.light_color = Color(0.7, 0.75, 0.85)
+	light.light_energy = 0.75
 	light.shadow_enabled = false
 	world.add_child(light)
+
+	var fill := OmniLight3D.new()
+	fill.position = Vector3(0, 6, 0)
+	fill.light_color = Color(0.35, 0.45, 0.55)
+	fill.light_energy = 0.35
+	fill.omni_range = 18.0
+	world.add_child(fill)
 
 	var env := WorldEnvironment.new()
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_COLOR
-	environment.background_color = Color(0.08, 0.12, 0.22)
+	environment.background_color = NeonPalette.VOID
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = Color(0.55, 0.6, 0.7)
+	environment.ambient_light_color = Color(0.18, 0.2, 0.26)
+	environment.ambient_light_energy = 0.7
+	environment.tonemap_mode = Environment.TONE_MAPPER_ACES
+	environment.glow_enabled = true
+	environment.glow_intensity = 0.35
+	environment.glow_strength = 0.55
+	environment.glow_bloom = 0.05
+	environment.glow_hdr_threshold = 1.2
 	env.environment = environment
 	world.add_child(env)
 
 	_setup_aim_arrow()
+	_style_hud()
 
 
 func _setup_aim_arrow() -> void:
 	if aim_arrow == null:
 		return
 	var mesh := BoxMesh.new()
-	mesh.size = Vector3(0.15, 0.08, 1.2)
+	mesh.size = Vector3(0.12, 0.06, 1.25)
 	aim_arrow.mesh = mesh
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.9, 0.2, 0.15)
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	aim_arrow.material_override = mat
+	aim_arrow.material_override = NeonPalette.make_emissive(NeonPalette.AIM, 0.55)
 	aim_arrow.visible = false
+
+
+func _style_hud() -> void:
+	if lives_label:
+		lives_label.add_theme_color_override("font_color", NeonPalette.UI_TEXT)
+		lives_label.add_theme_color_override("font_outline_color", NeonPalette.VOID)
+		lives_label.add_theme_constant_override("outline_size", 6)
+	var hint := hud.get_node_or_null("Margin/TopBar/Hint") as Label
+	if hint:
+		hint.add_theme_color_override("font_color", NeonPalette.UI_MUTED)
+	_style_neon_button(attack_btn, NeonPalette.UI_DANGER, "АТАКА")
+	_style_neon_button(shield_btn, NeonPalette.SHIELD, "ЩИТ")
+
+
+func _style_neon_button(btn: Button, accent: Color, caption: String) -> void:
+	if btn == null:
+		return
+	btn.text = caption
+	btn.add_theme_color_override("font_color", NeonPalette.UI_TEXT)
+	btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	btn.add_theme_color_override("font_pressed_color", accent)
+	var normal: StyleBoxFlat = NeonPalette.make_flat_panel(Color(0.06, 0.09, 0.16, 0.82), accent, 2.5, 999)
+	var hover: StyleBoxFlat = NeonPalette.make_flat_panel(Color(accent.r, accent.g, accent.b, 0.28), accent.lightened(0.2), 3.0, 999)
+	var pressed: StyleBoxFlat = NeonPalette.make_flat_panel(Color(accent.r, accent.g, accent.b, 0.45), accent, 3.0, 999)
+	btn.add_theme_stylebox_override("normal", normal)
+	btn.add_theme_stylebox_override("hover", hover)
+	btn.add_theme_stylebox_override("pressed", pressed)
+	btn.add_theme_stylebox_override("focus", hover)
 
 
 func _setup_players() -> void:
@@ -89,7 +131,7 @@ func _setup_players() -> void:
 	add_child(p1)
 	p1.setup(
 		game_config, game_events, world, 0,
-		Color(0.2, 0.45, 0.95), Vector3(0, 0.4, half),
+		NeonPalette.P1, Vector3(0, 0.4, half),
 		joystick, false
 	)
 	p1.ev_lives_changed.connect(func(_l): _refresh_lives())
@@ -101,7 +143,7 @@ func _setup_players() -> void:
 	add_child(p2)
 	p2.setup(
 		game_config, game_events, world, 1,
-		Color(0.9, 0.25, 0.2), Vector3(0, 0.4, -half),
+		NeonPalette.P2, Vector3(0, 0.4, -half),
 		null, true
 	)
 	p2.ev_lives_changed.connect(func(_l): _refresh_lives())

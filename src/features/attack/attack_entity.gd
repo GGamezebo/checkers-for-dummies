@@ -51,11 +51,8 @@ func _build_visual(config: GameConfig) -> void:
 	var blade := BoxMesh.new()
 	blade.size = box.size
 	_mesh.mesh = blade
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.9, 0.2, 0.15, 0.7)
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_mesh.material_override = mat
+	var glow := Color(NeonPalette.ATTACK.r, NeonPalette.ATTACK.g, NeonPalette.ATTACK.b, 0.55)
+	_mesh.material_override = NeonPalette.make_emissive(glow, 0.5, true)
 	_mesh.visible = false
 	_collider.add_child(_mesh)
 	_set_enabled(false)
@@ -96,17 +93,17 @@ func deactivate() -> void:
 func _set_enabled(enabled: bool) -> void:
 	if _collider == null:
 		return
-	_collider.monitoring = enabled
-	_collider.monitorable = enabled
-	_collider.collision_layer = 2 if enabled else 0
+	_collider.set_deferred("monitoring", enabled)
+	_collider.set_deferred("monitorable", enabled)
+	_collider.set_deferred("collision_layer", 2 if enabled else 0)
 
 
 func _on_body_entered(body: Node) -> void:
-	_try_hit(body)
+	call_deferred("_try_hit", body)
 
 
 func _on_area_entered(area: Area3D) -> void:
-	_try_hit(area)
+	call_deferred("_try_hit", area)
 
 
 func _try_hit(node: Node) -> void:

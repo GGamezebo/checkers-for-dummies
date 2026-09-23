@@ -1,7 +1,7 @@
 class_name Arena
 extends Node3D
 
-## Playable green field + perimeter barrier ring + abyss outside.
+## Quiet dark pad + barrier ring + abyss outside.
 
 var half_size: float = 6.0
 var floor_mesh: MeshInstance3D
@@ -17,13 +17,26 @@ func build(config: GameConfig) -> void:
 func _build_floor() -> void:
 	floor_mesh = MeshInstance3D.new()
 	var plane := BoxMesh.new()
-	plane.size = Vector3(half_size * 2.0, 0.2, half_size * 2.0)
+	plane.size = Vector3(half_size * 2.0, 0.18, half_size * 2.0)
 	floor_mesh.mesh = plane
-	floor_mesh.position = Vector3(0, -0.1, 0)
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.28, 0.62, 0.32)
+	floor_mesh.position = Vector3(0, -0.09, 0)
+	var mat := NeonPalette.make_emissive(NeonPalette.FLOOR, 0.08)
+	mat.emission = NeonPalette.GRID_LINE
+	mat.emission_energy_multiplier = 0.05
 	floor_mesh.material_override = mat
 	add_child(floor_mesh)
+
+	# Thin muted edge line (no floodlight torus)
+	var rim := MeshInstance3D.new()
+	var rim_mesh := TorusMesh.new()
+	rim_mesh.inner_radius = half_size - 0.08
+	rim_mesh.outer_radius = half_size + 0.02
+	rim_mesh.rings = 24
+	rim_mesh.ring_segments = 40
+	rim.mesh = rim_mesh
+	rim.position = Vector3(0, 0.015, 0)
+	rim.material_override = NeonPalette.make_emissive(NeonPalette.FLOOR_EDGE, 0.25)
+	add_child(rim)
 
 	var body := StaticBody3D.new()
 	body.collision_layer = 32  # world

@@ -56,11 +56,8 @@ func _build_visual(config: GameConfig) -> void:
 	var quad := BoxMesh.new()
 	quad.size = box.size
 	_mesh.mesh = quad
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.25, 0.55, 0.95, 0.55)
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_mesh.material_override = mat
+	var glow := Color(NeonPalette.SHIELD.r, NeonPalette.SHIELD.g, NeonPalette.SHIELD.b, 0.45)
+	_mesh.material_override = NeonPalette.make_emissive(glow, 0.4, true)
 	_mesh.visible = false
 	_collider.add_child(_mesh)
 	_set_collider_enabled(false)
@@ -133,14 +130,22 @@ func can_block(attack_direction: Vector3) -> bool:
 func _set_collider_enabled(enabled: bool) -> void:
 	if _collider == null:
 		return
-	_collider.collision_layer = 4 if enabled else 0
-	_collider.collision_mask = 1 if enabled else 0  # detect pawns
-	_collider.monitoring = enabled
-	_collider.monitorable = enabled
+	# Never touch Area3D query flags synchronously from body_entered.
+	_collider.set_deferred("collision_layer", 4 if enabled else 0)
+	_collider.set_deferred("collision_mask", 1 if enabled else 0)
+	_collider.set_deferred("monitoring", enabled)
+	_collider.set_deferred("monitorable", enabled)
 
 
 func _on_body_entered(body: Node) -> void:
 	if not is_active or _owner_pawn == null:
 		return
 	if body is Pawn and body != _owner_pawn:
-		_owner_pawn.resolve_interaction(InteractionKind.Kind.SHIELD, body as Pawn, InteractionKind.Kind.PAWN)
+		# Defer so spend_charge → deactivate is outside the signal lock.
+		call_deferred("_resolve_pawn_hit", body as Pawn)
+
+
+func _resolve_pawn_hit(other: Pawn) -> void:
+	if not is_active or _owner_pawn == null or other == null or not is_instance_valid(other):
+		return
+	_owner_pawn.resolve_interaction(InteractionKind.Kind.SHIELD, other, InteractionKind.Kind.PAWN)

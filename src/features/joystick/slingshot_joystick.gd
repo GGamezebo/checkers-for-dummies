@@ -29,24 +29,18 @@ func _ready() -> void:
 func _build() -> void:
 	_base = Panel.new()
 	_base.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var base_sb := StyleBoxFlat.new()
-	base_sb.bg_color = Color(0.55, 0.75, 0.9, 0.35)
-	base_sb.corner_radius_top_left = 999
-	base_sb.corner_radius_top_right = 999
-	base_sb.corner_radius_bottom_left = 999
-	base_sb.corner_radius_bottom_right = 999
-	_base.add_theme_stylebox_override("panel", base_sb)
+	_base.add_theme_stylebox_override(
+		"panel",
+		NeonPalette.make_round_disk(Color(0.08, 0.1, 0.14, 0.65), NeonPalette.UI_ACCENT.darkened(0.25), 2.0)
+	)
 	add_child(_base)
 
 	_stick = Panel.new()
 	_stick.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var stick_sb := StyleBoxFlat.new()
-	stick_sb.bg_color = Color(0.75, 0.2, 0.2, 0.85)
-	stick_sb.corner_radius_top_left = 999
-	stick_sb.corner_radius_top_right = 999
-	stick_sb.corner_radius_bottom_left = 999
-	stick_sb.corner_radius_bottom_right = 999
-	_stick.add_theme_stylebox_override("panel", stick_sb)
+	_stick.add_theme_stylebox_override(
+		"panel",
+		NeonPalette.make_round_disk(Color(0.55, 0.22, 0.3, 0.85), NeonPalette.UI_DANGER.darkened(0.2), 2.0)
+	)
 	add_child(_stick)
 
 

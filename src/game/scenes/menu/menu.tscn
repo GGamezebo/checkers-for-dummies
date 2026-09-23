@@ -15,7 +15,24 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.12, 0.18, 0.14, 1)
+color = Color(0.02, 0.024, 0.06, 1)
+
+[node name="AccentTop" type="ColorRect" parent="UI"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 3.0
+grow_horizontal = 2
+color = Color(0.08, 0.94, 1, 1)
+
+[node name="AccentBottom" type="ColorRect" parent="UI"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -3.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(1, 0.18, 0.42, 1)
 
 [node name="Center" type="VBoxContainer" parent="UI"]
 anchors_preset = 8
@@ -23,24 +40,30 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -180.0
-offset_top = -80.0
-offset_right = 180.0
-offset_bottom = 80.0
+offset_left = -220.0
+offset_top = -110.0
+offset_right = 220.0
+offset_bottom = 110.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 18
 
 [node name="Title" type="Label" parent="UI/Center"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 36
-text = "Checkers for Dummies"
+theme_override_font_sizes/font_size = 40
+text = "CHECKERS NEON"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="UI/Center"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "dark arena / slingshot / neon duel"
 horizontal_alignment = 1
 
 [node name="PlayButton" type="Button" parent="UI/Center"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 56)
+custom_minimum_size = Vector2(0, 58)
 theme_override_font_sizes/font_size = 22
-text = "Играть"
+text = "PLAY"
 
 [connection signal="pressed" from="UI/Center/PlayButton" to="." method="_on_play_pressed"]
