@@ -51,9 +51,9 @@ func _build() -> void:
 
 
 func _on_resized() -> void:
-	var size := get_size()
-	_center = size * 0.5
-	base_radius = minf(size.x, size.y) * 0.45
+	var joy_size := get_size()
+	_center = joy_size * 0.5
+	base_radius = minf(joy_size.x, joy_size.y) * 0.45
 	stick_radius = base_radius * 0.4
 	_base.position = _center - Vector2(base_radius, base_radius)
 	_base.size = Vector2(base_radius, base_radius) * 2.0
