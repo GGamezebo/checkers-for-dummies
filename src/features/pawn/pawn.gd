@@ -7,6 +7,7 @@ signal ev_hp_changed(hp: float)
 signal ev_died(pawn: Pawn)
 signal ev_flight_changed(in_flight: bool)
 signal ev_stun_changed(stunned: bool)
+signal ev_knocked(strength: float)
 
 @export var player_id: int = 0
 @export var team_color: Color = Color(0.2, 0.45, 0.95)
@@ -32,6 +33,18 @@ var _stun_left: float = 0.0
 var _pending_stun: float = 0.0
 var _body_collider: CollisionShape3D
 var _interacted_pairs: Dictionary = {}
+var _knock_grace_left: float = 0.0
+## Planar velocity sampled before the physics step — contact signals fire after
+## the solver already changed linear_velocity, so impacts read this instead.
+var _prev_planar_velocity: Vector3 = Vector3.ZERO
+
+var _visual: Node3D
+var _body_mat: StandardMaterial3D
+var _ring_mat: StandardMaterial3D
+var _flash_left: float = 0.0
+const _FLASH_TIME := 0.18
+const _BODY_EMISSION := 0.45
+const _RING_EMISSION := 0.4
 
 
 func initialize(config: GameConfig, id: int, color: Color, spawn_pos: Vector3) -> void:
@@ -70,6 +83,11 @@ func _build_visual(config: GameConfig) -> void:
 	_body_collider.position = Vector3(0, config.pawn_height * 0.5, 0)
 	add_child(_body_collider)
 
+	# Meshes live under one node so spawn/hit animations never touch the body scale.
+	_visual = Node3D.new()
+	_visual.name = "Visual"
+	add_child(_visual)
+
 	var mesh := MeshInstance3D.new()
 	var mesh_cyl := CylinderMesh.new()
 	mesh_cyl.top_radius = config.pawn_radius
@@ -78,11 +96,11 @@ func _build_visual(config: GameConfig) -> void:
 	mesh.mesh = mesh_cyl
 	mesh.position = Vector3(0, config.pawn_height * 0.5, 0)
 	var body_col := Color(team_color.darkened(0.55).r, team_color.darkened(0.55).g, team_color.darkened(0.55).b, 1.0)
-	var mat := NeonPalette.make_emissive(body_col, 0.25)
-	mat.emission = team_color.darkened(0.2)
-	mat.emission_energy_multiplier = 0.45
-	mesh.material_override = mat
-	add_child(mesh)
+	_body_mat = NeonPalette.make_emissive(body_col, 0.25)
+	_body_mat.emission = team_color.darkened(0.2)
+	_body_mat.emission_energy_multiplier = _BODY_EMISSION
+	mesh.material_override = _body_mat
+	_visual.add_child(mesh)
 
 	# Soft top ring
 	var ring := MeshInstance3D.new()
@@ -93,8 +111,9 @@ func _build_visual(config: GameConfig) -> void:
 	ring_mesh.ring_segments = 24
 	ring.mesh = ring_mesh
 	ring.position = Vector3(0, config.pawn_height + 0.02, 0)
-	ring.material_override = NeonPalette.make_emissive(team_color.darkened(0.15), 0.4)
-	add_child(ring)
+	_ring_mat = NeonPalette.make_emissive(team_color.darkened(0.15), _RING_EMISSION)
+	ring.material_override = _ring_mat
+	_visual.add_child(ring)
 
 	# Forward marker
 	var nose := MeshInstance3D.new()
@@ -103,24 +122,28 @@ func _build_visual(config: GameConfig) -> void:
 	nose.mesh = nose_mesh
 	nose.position = Vector3(0, config.pawn_height * 0.55, -config.pawn_radius * 0.75)
 	nose.material_override = NeonPalette.make_emissive(team_color.lightened(0.1), 0.5)
-	add_child(nose)
+	_visual.add_child(nose)
 
 	var glow := OmniLight3D.new()
 	glow.light_color = team_color
 	glow.light_energy = 0.35
 	glow.omni_range = 1.8
 	glow.position = Vector3(0, config.pawn_height * 0.7, 0)
-	add_child(glow)
+	_visual.add_child(glow)
 
 	world_label = Label3D.new()
 	world_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	world_label.font_size = 48
+	world_label.font_size = 80
 	world_label.modulate = NeonPalette.UI_TEXT
 	world_label.outline_modulate = NeonPalette.VOID
-	world_label.outline_size = 8
+	world_label.outline_size = 16
 	world_label.position = Vector3(0, config.pawn_height + 0.55, 0)
 	add_child(world_label)
 	_refresh_label()
+
+	_visual.scale = Vector3(0.2, 0.2, 0.2)
+	create_tween().tween_property(_visual, "scale", Vector3.ONE, 0.28) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _build_components(config: GameConfig) -> void:
@@ -144,7 +167,9 @@ func _physics_process(delta: float) -> void:
 		return
 	_update_stun_and_flight(delta)
 	_interacted_pairs.clear()
+	_prev_planar_velocity = Vector3(linear_velocity.x, 0.0, linear_velocity.z)
 	_refresh_label()
+	_update_feedback(delta)
 
 
 func _update_stun_and_flight(delta: float) -> void:
@@ -155,14 +180,18 @@ func _update_stun_and_flight(delta: float) -> void:
 		if not is_in_flight:
 			is_in_flight = true
 			ev_flight_changed.emit(true)
-	elif is_in_flight and speed <= min_flight_speed:
+	elif is_in_flight:
 		is_in_flight = false
 		was_knocked_by_enemy = false
 		ev_flight_changed.emit(false)
-		# Apply pending stun strictly after leaving flight
-		if _pending_stun > 0.0:
-			_apply_stun(_pending_stun)
-			_pending_stun = 0.0
+		_flush_pending_stun()
+	elif was_knocked_by_enemy:
+		# Knock too weak to start a flight: drop the mark so a later own-will
+		# launch is not treated as an enemy knock (flight lock / barrier damage).
+		_knock_grace_left -= delta
+		if _knock_grace_left <= 0.0:
+			was_knocked_by_enemy = false
+			_flush_pending_stun()
 
 	if is_stunned:
 		_stun_left -= delta
@@ -200,8 +229,18 @@ func apply_slingshot(joystick_vec: Vector2) -> void:
 		return
 	dir = dir.normalized()
 	look_at(global_position + dir, Vector3.UP)
+	was_knocked_by_enemy = false
+	_knock_grace_left = 0.0
 	var strength := clamped.length() * max_impulse
 	apply_central_impulse(dir * strength)
+
+
+func face_toward(target: Vector3) -> void:
+	var dir := target - global_position
+	dir.y = 0.0
+	if dir.length_squared() < 0.0001:
+		return
+	look_at(global_position + dir.normalized(), Vector3.UP)
 
 
 func try_attack() -> void:
@@ -228,7 +267,7 @@ func receive_damage(amount: float, from_pawn: Pawn, impulse_mod: float) -> void:
 	if from_pawn and shield and shield.is_active:
 		var attack_dir := (global_position - from_pawn.global_position)
 		if shield.can_block(attack_dir):
-			shield.spend_charge()
+			shield.consume()
 			# Still apply reduced impulse as defender per table if caller already set mod
 			_apply_knockback(from_pawn, impulse_mod)
 			return
@@ -248,15 +287,26 @@ func _apply_knockback(from_pawn: Pawn, impulse_mod: float) -> void:
 	away = away.normalized()
 	var strength := CombatResolver.compute_knockback_impulse(base_impulse, hp, impulse_mod)
 	was_knocked_by_enemy = true
+	_knock_grace_left = _config.knock_flight_grace if _config else 0.15
 	apply_central_impulse(away * strength)
+	_flash_left = _FLASH_TIME
+	ev_knocked.emit(strength)
 
 
 func queue_stun(duration: float = -1.0) -> void:
 	var t := stun_duration if duration < 0.0 else duration
-	if is_in_flight:
+	# A fresh knock has not raised the speed yet — it may still become a flight,
+	# and stun must land strictly after it.
+	if is_in_flight or was_knocked_by_enemy:
 		_pending_stun = maxf(_pending_stun, t)
 	else:
 		_apply_stun(t)
+
+
+func _flush_pending_stun() -> void:
+	if _pending_stun > 0.0:
+		_apply_stun(_pending_stun)
+		_pending_stun = 0.0
 
 
 func _apply_stun(duration: float) -> void:
@@ -292,11 +342,16 @@ func resolve_interaction(my_kind: int, other: Pawn, other_kind: int) -> void:
 	var result := CombatResolver.resolve(self, my_kind, other, other_kind, _config)
 	_apply_effect(result["a"], other, my_kind)
 	other._apply_effect(result["b"], self, other_kind)
+	# Stuns go last so both knockbacks are in place and the stun is queued after flight.
+	if result["a"].get("stun_other", false):
+		other.queue_stun(shield.stun_time if shield else stun_duration)
+	if result["b"].get("stun_other", false):
+		queue_stun(other.shield.stun_time if other.shield else other.stun_duration)
 
 
 func _apply_effect(effect: Dictionary, other: Pawn, _my_kind: int) -> void:
 	if effect.get("spend_shield", false) and shield:
-		shield.spend_charge()
+		shield.consume()
 	if effect.get("stop_movement", false):
 		stop_movement()
 	var dmg: float = float(effect.get("damage", 0.0))
@@ -307,15 +362,13 @@ func _apply_effect(effect: Dictionary, other: Pawn, _my_kind: int) -> void:
 			receive_damage(dmg, other, mod)
 		elif mod > 0.0:
 			_apply_knockback(other, mod)
-	if effect.get("stun_other", false) and other:
-		other.queue_stun(shield.stun_time if shield else stun_duration)
 
 
 func _on_body_entered(body: Node) -> void:
 	if body is Pawn:
 		resolve_interaction(InteractionKind.Kind.PAWN, body as Pawn, InteractionKind.Kind.PAWN)
 	elif body is BarrierSegment:
-		(body as BarrierSegment).on_pawn_hit(self)
+		(body as BarrierSegment).on_pawn_hit(self, _prev_planar_velocity)
 
 
 func _pair_key(other: Pawn) -> int:
@@ -327,13 +380,29 @@ func _pair_key(other: Pawn) -> int:
 func _refresh_label() -> void:
 	if world_label == null:
 		return
-	var flags := ""
-	if is_in_flight:
-		flags += " F"
-	if is_stunned:
-		flags += " S"
-	# HP here = accumulated damage (scales knockback), not remaining health.
-	world_label.text = "P%d  +%.0f%s" % [player_id + 1, hp, flags]
+	# HP here = accumulated damage (scales knockback), not remaining health —
+	# shown as a percent that heats up toward the danger color.
+	world_label.text = "%d%%" % roundi(hp)
+	world_label.modulate = NeonPalette.UI_TEXT.lerp(NeonPalette.UI_DANGER, clampf(hp / 120.0, 0.0, 1.0))
+
+
+func _update_feedback(delta: float) -> void:
+	if _body_mat:
+		_flash_left = maxf(0.0, _flash_left - delta)
+		var k := _flash_left / _FLASH_TIME
+		_body_mat.emission = team_color.darkened(0.2).lerp(Color.WHITE, k * 0.6)
+		_body_mat.emission_energy_multiplier = _BODY_EMISSION + k * 1.1
+	if _ring_mat:
+		if is_stunned:
+			# Stun: ring blinks in the aim/amber tone — readable without text.
+			var blink := 0.5 + 0.5 * sin(Time.get_ticks_msec() * 0.018)
+			_ring_mat.albedo_color = NeonPalette.AIM
+			_ring_mat.emission = NeonPalette.AIM
+			_ring_mat.emission_energy_multiplier = lerpf(0.2, 0.8, blink)
+		else:
+			_ring_mat.albedo_color = team_color.darkened(0.15)
+			_ring_mat.emission = team_color.darkened(0.3)
+			_ring_mat.emission_energy_multiplier = _RING_EMISSION
 
 
 class MovementComponent:

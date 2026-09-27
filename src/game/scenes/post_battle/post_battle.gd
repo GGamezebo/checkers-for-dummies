@@ -16,7 +16,14 @@ func initialize(data: Dictionary) -> void:
 		_menu.text = "В МЕНЮ"
 	if result_label:
 		var winner: int = int(data.get("winner_id", -1))
-		if winner >= 0:
+		var vs_ai: bool = bool(data.get("vs_ai", false))
+		if winner >= 0 and vs_ai:
+			result_label.text = "ПОБЕДА" if winner == 0 else "ПОРАЖЕНИЕ"
+			result_label.add_theme_color_override(
+				"font_color",
+				NeonPalette.P1 if winner == 0 else NeonPalette.P2
+			)
+		elif winner >= 0:
 			result_label.text = "ПОБЕДИТЕЛЬ — ИГРОК %d" % (winner + 1)
 			result_label.add_theme_color_override(
 				"font_color",

@@ -11,13 +11,13 @@ alwaysApply: false
 | Folder | Role |
 |--------|------|
 | `pawn/` | Core `RigidBody3D` piece: HP, slingshot, flight, stun, owns shield+attack |
-| `shield/` | Charges, recharge, front-hemisphere block, optional stun on contact |
+| `shield/` | Charges (spent on activation), recharge, front-hemisphere block, optional stun on contact |
 | `attack/` | Timed forward collider (sword); reports hits to `Pawn.resolve_interaction` |
 | `combat/` | `InteractionKind` + `CombatResolver` (interaction table) |
-| `player_controller/` | Input → pawn; lives; respawn delay; lose at 0 lives |
+| `player_controller/` | Input → pawn (gated by `set_input_enabled`); lives; respawn facing center; lose at 0 lives |
 | `ai/` | `AiBrain` — drives P2 controller (sling / attack / shield) |
 | `joystick/` | `SlingshotJoystick` — pull back, release → opposite impulse |
-| `arena/` | Floor + builds barrier ring + abyss |
+| `arena/` | Square pad + rectangular barrier perimeter (`barrier_segment_count` / 4 per side) + abyss |
 | `barrier/` | Segment HP, elasticity bounce, enemy-knock damage only |
 | `abyss/` | Below-arena catch volume → `Pawn.die()` |
 

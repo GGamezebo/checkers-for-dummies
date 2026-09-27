@@ -143,8 +143,9 @@ func _choose_sling_pull(me: Pawn, foe: Pawn) -> Vector2:
 	var aim_at := foe_pos + lead
 
 	var arena_r: float = config.arena_half_size
-	var radial := Vector3(my_pos.x, 0.0, my_pos.z).length()
-	var near_edge := radial > arena_r - config.ai_edge_margin
+	# Rectangular pad: distance to the nearest edge is driven by the larger axis.
+	var edge_dist := maxf(absf(my_pos.x), absf(my_pos.z))
+	var near_edge := edge_dist > arena_r - config.ai_edge_margin
 
 	var launch := Vector3.ZERO
 	if near_edge:
@@ -197,8 +198,4 @@ func _planar_dist(a: Pawn, b: Pawn) -> float:
 
 
 func _face_toward(me: Pawn, target: Vector3) -> void:
-	var dir := target - me.global_position
-	dir.y = 0.0
-	if dir.length_squared() < 0.0001:
-		return
-	me.look_at(me.global_position + dir.normalized(), Vector3.UP)
+	me.face_toward(target)

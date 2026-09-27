@@ -59,7 +59,7 @@ text = "P1: 3❤  |  P2: 3❤"
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
-text = "vs AI"
+text = "vs AI  ·  оттяни джойстик и отпусти"
 horizontal_alignment = 2
 
 [node name="Joystick" type="Control" parent="HUD"]
@@ -86,7 +86,7 @@ offset_bottom = -50.0
 grow_horizontal = 0
 grow_vertical = 0
 theme_override_font_sizes/font_size = 18
-text = "Щит"
+text = "ЩИТ"
 
 [node name="AttackButton" type="Button" parent="HUD"]
 anchors_preset = 3
@@ -101,4 +101,24 @@ offset_bottom = -50.0
 grow_horizontal = 0
 grow_vertical = 0
 theme_override_font_sizes/font_size = 20
-text = "Атака"
+text = "АТАКА"
+
+[node name="Banner" type="Label" parent="HUD"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -60.0
+offset_right = 320.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(320, 60)
+theme_override_colors/font_color = Color(0.784, 0.831, 0.878, 1)
+theme_override_colors/font_outline_color = Color(0.0196, 0.0235, 0.0588, 1)
+theme_override_constants/outline_size = 12
+theme_override_font_sizes/font_size = 72
+horizontal_alignment = 1
+vertical_alignment = 1

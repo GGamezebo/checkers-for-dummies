@@ -2,7 +2,7 @@ class_name ShieldEntity
 extends Node3D
 
 ## Blocks damage when active and hit comes from the front hemisphere.
-## Spends one charge on successful block / table interaction.
+## Activation spends one charge (TZ); a block / table interaction consumes the active shield.
 
 signal ev_charges_changed(charges: int, max_charges: int)
 signal ev_activated
@@ -81,6 +81,10 @@ func _process(delta: float) -> void:
 func try_activate() -> bool:
 	if is_active or charges <= 0:
 		return false
+	charges -= 1
+	if _recharge_left <= 0.0:
+		_recharge_left = recharge_time
+	ev_charges_changed.emit(charges, max_charges)
 	is_active = true
 	_active_left = active_duration
 	_set_collider_enabled(true)
@@ -101,13 +105,8 @@ func deactivate() -> void:
 	ev_deactivated.emit()
 
 
-func spend_charge() -> void:
-	if charges <= 0:
-		return
-	charges -= 1
-	if charges < max_charges and _recharge_left <= 0.0:
-		_recharge_left = recharge_time
-	ev_charges_changed.emit(charges, max_charges)
+func consume() -> void:
+	## The charge was already paid on activation — an interaction just ends the shield.
 	deactivate()
 
 

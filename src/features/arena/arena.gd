@@ -1,7 +1,7 @@
 class_name Arena
 extends Node3D
 
-## Quiet dark pad + barrier ring + abyss outside.
+## Quiet dark pad + rectangular barrier perimeter + abyss outside.
 
 var half_size: float = 6.0
 var floor_mesh: MeshInstance3D
@@ -26,17 +26,31 @@ func _build_floor() -> void:
 	floor_mesh.material_override = mat
 	add_child(floor_mesh)
 
-	# Thin muted edge line (no floodlight torus)
-	var rim := MeshInstance3D.new()
-	var rim_mesh := TorusMesh.new()
-	rim_mesh.inner_radius = half_size - 0.08
-	rim_mesh.outer_radius = half_size + 0.02
-	rim_mesh.rings = 24
-	rim_mesh.ring_segments = 40
-	rim.mesh = rim_mesh
-	rim.position = Vector3(0, 0.015, 0)
-	rim.material_override = NeonPalette.make_emissive(NeonPalette.FLOOR_EDGE, 0.25)
-	add_child(rim)
+	# Thin muted edge line along the pad border (no floodlight)
+	var rim_mat := NeonPalette.make_emissive(NeonPalette.FLOOR_EDGE, 0.25)
+	for side in 4:
+		var angle := side * PI * 0.5
+		var rim := MeshInstance3D.new()
+		var rim_mesh := BoxMesh.new()
+		rim_mesh.size = Vector3(half_size * 2.0, 0.02, 0.08)
+		rim.mesh = rim_mesh
+		rim.material_override = rim_mat
+		rim.position = Vector3(sin(angle), 0.0, cos(angle)) * (half_size - 0.04) + Vector3(0, 0.01, 0)
+		rim.rotation.y = angle
+		add_child(rim)
+
+	# Faint center mark — gives the dark pad a sense of scale and spawn symmetry
+	var center := MeshInstance3D.new()
+	var center_mesh := TorusMesh.new()
+	center_mesh.inner_radius = half_size * 0.16
+	center_mesh.outer_radius = half_size * 0.16 + 0.04
+	center_mesh.rings = 64
+	center_mesh.ring_segments = 6
+	center.mesh = center_mesh
+	center.scale = Vector3(1, 0.1, 1)
+	center.position = Vector3(0, 0.005, 0)
+	center.material_override = NeonPalette.make_emissive(NeonPalette.GRID_LINE.lightened(0.15), 0.1)
+	add_child(center)
 
 	var body := StaticBody3D.new()
 	body.collision_layer = 32  # world
@@ -51,21 +65,31 @@ func _build_floor() -> void:
 
 
 func _build_barriers(config: GameConfig) -> void:
-	var count: int = config.barrier_segment_count
-	var radius: float = half_size
-	var circumference: float = TAU * radius
-	var segment_len: float = circumference / float(count)
-	var size := Vector3(segment_len * 0.95, config.barrier_height, config.barrier_thickness)
+	## Rectangular perimeter (mockup): barrier_segment_count split over 4 sides,
+	## segments sit just outside the pad edge; side length covers the corners.
+	var per_side: int = maxi(1, int(config.barrier_segment_count / 4.0))
+	var thickness: float = config.barrier_thickness
+	var side_len: float = half_size * 2.0 + thickness * 2.0
+	var segment_len: float = side_len / float(per_side)
+	var size := Vector3(segment_len * 0.96, config.barrier_height, thickness)
 
-	for i in count:
-		var angle := (TAU * float(i)) / float(count)
-		var pos := Vector3(sin(angle) * radius, config.barrier_height * 0.5, cos(angle) * radius)
-		var seg := BarrierSegment.new()
-		seg.name = "Barrier_%d" % i
-		add_child(seg)
-		seg.global_position = global_position + pos
-		seg.rotation.y = angle
-		seg.setup(config.barrier_hp, config.barrier_elasticity, size)
+	var index := 0
+	for side in 4:
+		var angle := side * PI * 0.5
+		# rotation.y = angle → local Z = outward normal, local X = along the side
+		var outward := Vector3(sin(angle), 0.0, cos(angle))
+		var along := Vector3(cos(angle), 0.0, -sin(angle))
+		for i in per_side:
+			var t := -side_len * 0.5 + segment_len * (float(i) + 0.5)
+			var pos := outward * (half_size + thickness * 0.5) + along * t
+			pos.y = config.barrier_height * 0.5
+			var seg := BarrierSegment.new()
+			seg.name = "Barrier_%d" % index
+			index += 1
+			add_child(seg)
+			seg.global_position = global_position + pos
+			seg.rotation.y = angle
+			seg.setup(config.barrier_hp, config.barrier_elasticity, size)
 
 
 func _build_abyss(_config: GameConfig) -> void:

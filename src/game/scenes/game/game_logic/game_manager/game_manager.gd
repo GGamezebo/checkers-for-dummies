@@ -49,6 +49,16 @@ func start_match() -> void:
 		game_scene.on_match_start()
 
 
+func countdown_tick(seconds_left: int) -> void:
+	if game_scene and game_scene.has_method("on_countdown_tick"):
+		game_scene.on_countdown_tick(seconds_left)
+
+
+func show_result(data: Dictionary) -> void:
+	if game_scene and game_scene.has_method("on_match_result"):
+		game_scene.on_match_result(data)
+
+
 func finish_match(data: Dictionary) -> void:
 	if game_scene and game_scene.has_method("on_match_end"):
 		game_scene.on_match_end(data)

@@ -4,12 +4,14 @@ extends StateBase
 static func get_state() -> String:
 	return "countdown"
 
-var _left: float = 1.0
+var _left: float = 3.0
+var _shown: int = -1
 var _active: bool = false
 
 
 func enter(_prev_state: FSMState, _event_data: Dictionary) -> void:
-	_left = 1.0
+	_left = game_config.countdown_time if game_config else 3.0
+	_shown = -1
 	_active = true
 
 
@@ -21,6 +23,11 @@ func _process(delta: float) -> void:
 	if not _active:
 		return
 	_left -= delta
+	var whole := ceili(_left)
+	if whole != _shown and whole > 0:
+		_shown = whole
+		if game_manager:
+			game_manager.countdown_tick(whole)
 	if _left <= 0.0:
 		_active = false
 		add_event(FSMGameEvents.START_GAME)

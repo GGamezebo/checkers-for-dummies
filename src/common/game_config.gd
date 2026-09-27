@@ -27,10 +27,23 @@ extends Resource
 
 @export_group("Stun / Flight")
 @export var stun_time: float = 1.0
+## After an enemy knockback, how long to wait for speed to cross the flight
+## threshold before the "knocked by enemy" mark is dropped.
+@export var knock_flight_grace: float = 0.15
 
 @export_group("Player")
 @export var player_lives: int = 3
 @export var respawn_delay: float = 1.2
+
+@export_group("Match")
+@export var countdown_time: float = 3.0
+## Pause on the result banner before leaving the battle scene.
+@export var end_game_delay: float = 1.8
+
+@export_group("Feedback")
+## Camera shake amplitude (world units) for a knockback of pawn_max_impulse strength.
+@export var camera_shake_strength: float = 0.22
+@export var camera_shake_decay: float = 3.5
 
 @export_group("AI")
 @export var ai_enabled: bool = true

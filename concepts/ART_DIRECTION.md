@@ -38,14 +38,15 @@ Keep emission/bloom **low**. Prefer readable silhouettes over glow halos.
 
 1. **Arena** — dark pad + cyan rim; camera top-down  
 2. **Abyss** — void outside; fall = death  
-3. **Barrier ring** — neon segments; cyan → amber → magenta as HP drops; gaps at 0  
+3. **Barrier perimeter** — segments along the rectangular pad edges (mockup); cyan → amber → magenta as HP drops; flash on hit; collapse into a gap at 0  
 4. **HUD left** — dark glass joystick with cyan ring  
 5. **HUD right** — round neon Shield + Attack  
 6. **Top** — lives in icy UI text  
 
 ### Slingshot feedback
 
-- Pull → **yellow neon** aim arrow opposite to stick; length ∝ charge
+- Pull → **yellow neon** aim arrow (shaft + head, flat on the pad) opposite to stick; length ∝ charge
+- Launch not possible (moving / stunned / in flight / countdown) → arrow turns **muted grey**
 
 ## Combat / mechanics
 
@@ -53,4 +54,4 @@ Unchanged — see `doc/TZ_CORE.md` and interaction table.
 
 ## When updating this doc
 
-Palette or mood changes → update this file + `.cursor/rules/visual-concept.mdc` + `NeonPalette` in the same task.
+Palette or mood changes → update this file + `.cursor/rules/visual-concept.mdc` + `.claude/rules/visual-concept.md` + `NeonPalette` in the same task.

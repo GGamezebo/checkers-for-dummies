@@ -21,6 +21,9 @@ var game_config: GameConfig
 var game_events: GameEvents
 var arena_parent: Node3D
 
+## Off during countdown / result banner; the match flow toggles it.
+var input_enabled: bool = false
+
 var _respawn_left: float = -1.0
 var _aim_vector: Vector2 = Vector2.ZERO
 var _aiming: bool = false
@@ -66,7 +69,7 @@ func _process(delta: float) -> void:
 	if pawn == null or not is_instance_valid(pawn):
 		return
 
-	if use_keyboard_fallback:
+	if use_keyboard_fallback and input_enabled:
 		_poll_keyboard()
 		if Input.is_action_just_pressed("attack"):
 			pawn.try_attack()
@@ -74,13 +77,20 @@ func _process(delta: float) -> void:
 			pawn.try_shield()
 
 
+func set_input_enabled(on: bool) -> void:
+	input_enabled = on
+	if not on:
+		_aiming = false
+		_aim_vector = Vector2.ZERO
+
+
 func request_attack() -> void:
-	if pawn and is_instance_valid(pawn):
+	if input_enabled and pawn and is_instance_valid(pawn):
 		pawn.try_attack()
 
 
 func request_shield() -> void:
-	if pawn and is_instance_valid(pawn):
+	if input_enabled and pawn and is_instance_valid(pawn):
 		pawn.try_shield()
 
 
@@ -91,7 +101,7 @@ func _on_joystick_changed(value: Vector2) -> void:
 
 func _on_joystick_released(value: Vector2) -> void:
 	_aiming = false
-	if pawn and is_instance_valid(pawn):
+	if input_enabled and pawn and is_instance_valid(pawn):
 		pawn.apply_slingshot(value)
 	_aim_vector = Vector2.ZERO
 
@@ -124,6 +134,7 @@ func _spawn_pawn() -> void:
 	pawn = pawn_scene.instantiate() as Pawn
 	arena_parent.add_child(pawn)
 	pawn.initialize(game_config, player_id, team_color, spawn_point)
+	pawn.face_toward(Vector3(0.0, spawn_point.y, 0.0))
 	pawn.ev_died.connect(_on_pawn_died)
 	ev_pawn_spawned.emit(pawn)
 
