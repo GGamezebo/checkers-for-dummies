@@ -35,7 +35,7 @@ paths:
 - Prefix new cross-object signals with `ev_`
 - Tear down listeners on context/FSM leave
 - Use existing 3D physics layers: pawn=1, attack=2, shield=3, barrier=4, abyss=5, world=6
-- Use InputMap actions (`attack`, `shield`) + touch joystick — support Mobile + desktop
+- Use InputMap actions (`attack`, `shield`, debug `move_*`) + touch joystick — support Mobile + desktop
 - New controls/UI must be usable with fingers on landscape phone
 
 ## Layers

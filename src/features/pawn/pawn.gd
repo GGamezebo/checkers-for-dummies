@@ -58,7 +58,12 @@ func initialize(config: GameConfig, id: int, color: Color, spawn_pos: Vector3) -
 	hp = 0.0
 	is_dead = false
 	mass = config.pawn_mass
+	linear_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
 	linear_damp = config.pawn_linear_damp
+	var ice := PhysicsMaterial.new()
+	ice.friction = config.pawn_friction
+	ice.bounce = 0.0
+	physics_material_override = ice
 	angular_damp = 8.0
 	gravity_scale = 1.0
 	lock_rotation = true

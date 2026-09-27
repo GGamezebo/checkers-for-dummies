@@ -11,7 +11,7 @@ Before changing arena/HUD look, **read** `concepts/ART_DIRECTION.md`. Never wire
 Must match:
 
 - **Mood:** quiet dark void + muted teal/rose accents — stylish, **not** flashy bloom
-- **Arena:** dark pad; thin low-emission rim; barriers muted cyan → amber → rose when damaged
+- **Arena:** dark-blue ice pad lifted above the void (`arena_floor.gdshader`: faint 1 m grid, gloss, inner border glow); thin rim; barriers muted cyan → amber → rose when damaged
 - **Pawns:** P1 teal `#3DB8C8`, P2 rose `#C84A6A`; soft emission, weak OmniLight
 - **HUD:** dark panels, thin accent borders (not glowing discs)
 - **Glow:** environment bloom low (`intensity` ~0.35, `bloom` ~0.05); emission energies mostly `< 0.7`

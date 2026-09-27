@@ -22,7 +22,7 @@ Avoid hardcoded `res://` strings that break when files move.
 Ship and play well on **Mobile** (primary: touch joystick + buttons), **desktop**, and later **HTML5**.
 
 - Design every control/UI for comfortable **touch first**, then mouse/keyboard
-- Prefer InputMap actions (`attack`, `shield`, `ui_*`) over hard-coded keys; on-screen joystick is the primary move input
+- Prefer InputMap actions (`attack`, `shield`, `move_*`, `ui_*`) over hard-coded keys; on-screen joystick is the primary move input
 - UI: readable at phone landscape, large finger hit targets; still clean on 16:9 desktop
 - Performance: mobile renderer — keep physics/FX light
 - Platform-specific code: isolate behind `OS.has_feature(...)` — do not fork gameplay

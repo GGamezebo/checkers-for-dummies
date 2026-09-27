@@ -141,6 +141,8 @@ func _style_hud() -> void:
 	var hint := hud.get_node_or_null("Margin/TopBar/Hint") as Label
 	if hint:
 		hint.add_theme_color_override("font_color", NeonPalette.UI_MUTED)
+		if _debug_keyboard():
+			hint.text += "  ·  debug: WASD / стрелки"
 	_style_neon_button(attack_btn, NeonPalette.UI_DANGER)
 	_style_neon_button(shield_btn, NeonPalette.SHIELD)
 
@@ -168,7 +170,7 @@ func _setup_players() -> void:
 	p1.setup(
 		game_config, game_events, world, 0,
 		NeonPalette.P1, Vector3(0, 0.4, half),
-		joystick, false
+		joystick, _debug_keyboard()
 	)
 
 	var p2 := PlayerController.new()
@@ -192,6 +194,10 @@ func _setup_players() -> void:
 		_ai_brain = AiBrain.new()
 		_ai_brain.setup(p2, p1, game_config)
 		add_child(_ai_brain)
+
+
+func _debug_keyboard() -> bool:
+	return game_config.debug_keyboard_move and OS.is_debug_build()
 
 
 func _on_pawn_spawned(pawn: Pawn, controller: PlayerController) -> void:
@@ -307,7 +313,7 @@ func _on_shield_pressed() -> void:
 func _update_aim() -> void:
 	if aim_arrow == null or _aim_shaft == null or _controllers.is_empty():
 		return
-	var value: Vector2 = joystick.value if joystick else Vector2.ZERO
+	var value: Vector2 = _controllers[0].get_aim_vector()
 	var p: Pawn = _controllers[0].pawn
 	if p == null or not is_instance_valid(p) or value.length() < _AIM_MIN:
 		aim_arrow.visible = false

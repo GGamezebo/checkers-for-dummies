@@ -3,6 +3,8 @@ extends Node3D
 
 ## Quiet dark pad + rectangular barrier perimeter + abyss outside.
 
+const FLOOR_SHADER := preload("arena_floor.gdshader")
+
 var half_size: float = 6.0
 var floor_mesh: MeshInstance3D
 
@@ -20,14 +22,17 @@ func _build_floor() -> void:
 	plane.size = Vector3(half_size * 2.0, 0.18, half_size * 2.0)
 	floor_mesh.mesh = plane
 	floor_mesh.position = Vector3(0, -0.09, 0)
-	var mat := NeonPalette.make_emissive(NeonPalette.FLOOR, 0.08)
-	mat.emission = NeonPalette.GRID_LINE
-	mat.emission_energy_multiplier = 0.05
+	var mat := ShaderMaterial.new()
+	mat.shader = FLOOR_SHADER
+	mat.set_shader_parameter("base_color", NeonPalette.FLOOR)
+	mat.set_shader_parameter("grid_color", NeonPalette.FLOOR_GRID)
+	mat.set_shader_parameter("edge_color", NeonPalette.FLOOR_EDGE)
+	mat.set_shader_parameter("half_size", half_size)
 	floor_mesh.material_override = mat
 	add_child(floor_mesh)
 
 	# Thin muted edge line along the pad border (no floodlight)
-	var rim_mat := NeonPalette.make_emissive(NeonPalette.FLOOR_EDGE, 0.25)
+	var rim_mat := NeonPalette.make_emissive(NeonPalette.FLOOR_EDGE, 0.55)
 	for side in 4:
 		var angle := side * PI * 0.5
 		var rim := MeshInstance3D.new()
@@ -55,6 +60,9 @@ func _build_floor() -> void:
 	var body := StaticBody3D.new()
 	body.collision_layer = 32  # world
 	body.collision_mask = 0
+	var ice := PhysicsMaterial.new()
+	ice.friction = 0.0
+	body.physics_material_override = ice
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = plane.size

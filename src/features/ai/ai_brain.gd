@@ -170,11 +170,13 @@ func _choose_sling_pull(me: Pawn, foe: Pawn) -> Vector2:
 	launch = launch.rotated(Vector3.UP, _rng.randf_range(-jitter, jitter))
 
 	# Power from distance + aggression; slingshot pull is OPPOSITE of launch
+	# Slide distance ≈ impulse / (mass * damp) → pick power for dist + overshoot.
 	var dist := _planar_dist(me, foe)
-	var power := clampf(dist / (arena_r * 1.4), config.ai_min_sling_power, 1.0)
-	power = clampf(power * lerpf(0.85, 1.05, config.ai_aggression), 0.4, 1.0)
+	var full_slide: float = config.pawn_max_impulse / maxf(config.pawn_mass * config.pawn_linear_damp, 0.01)
+	var power := clampf((dist + config.ai_overshoot) / full_slide, config.ai_min_sling_power, 1.0)
+	power = clampf(power * lerpf(0.85, 1.1, config.ai_aggression), config.ai_min_sling_power, 1.0)
 	if near_edge:
-		power = minf(power, 0.85)
+		power = minf(power, 0.6)
 
 	var pull3 := -launch * power
 	# Map world XZ → joystick XY (same as Pawn.apply_slingshot inverse)

@@ -23,8 +23,9 @@ Quiet dark arena: deep void, muted teal/rose accents, soft bloom — stylish, no
 | Token | Hex | Use |
 |-------|-----|-----|
 | Void | `#05060F` | Sky / menu |
-| Floor | `#0C1018` | Arena pad |
-| Floor edge | `#2A6A78` | Thin rim (low emission) |
+| Floor | `#142230` | Arena pad — lifted above Void so the play area reads at a glance |
+| Floor grid | `#1F4652` | Thin 1 m grid on the pad (ice sheet) |
+| Floor edge | `#2A6A78` | Rim + inner border glow |
 | Barrier OK → bad | `#2B7A88` → `#A88B3A` → `#A83A55` | Perimeter |
 | P1 | `#3DB8C8` | Teal pawn |
 | P2 | `#C84A6A` | Rose pawn |
@@ -36,7 +37,7 @@ Keep emission/bloom **low**. Prefer readable silhouettes over glow halos.
 
 ## Layout (required)
 
-1. **Arena** — dark pad + cyan rim; camera top-down  
+1. **Arena** — dark-blue ice pad (lifted base, faint grid, glossy, border glow) + cyan rim; clearly brighter than the void; camera top-down  
 2. **Abyss** — void outside; fall = death  
 3. **Barrier perimeter** — segments along the rectangular pad edges (mockup); cyan → amber → magenta as HP drops; flash on hit; collapse into a gap at 0  
 4. **HUD left** — dark glass joystick with cyan ring  

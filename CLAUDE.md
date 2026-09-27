@@ -30,7 +30,7 @@ Avoid hardcoded `res://` strings that break when files move.
 **Mobile** first (touch joystick + buttons), then **desktop**, later **HTML5**.
 
 - Design every control/UI for touch first, then mouse/keyboard; large hit targets, readable in phone landscape, clean on 16:9
-- InputMap actions (`attack`, `shield`, `ui_*`) over hard-coded keys; on-screen joystick is the primary move input
+- InputMap actions (`attack`, `shield`, `move_*` debug keyboard, `ui_*`) over hard-coded keys; on-screen joystick is the primary move input
 - Mobile renderer — keep physics/FX light
 - Platform-specific code behind `OS.has_feature(...)` — do not fork gameplay
 

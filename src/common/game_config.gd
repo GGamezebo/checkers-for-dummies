@@ -6,7 +6,9 @@ extends Resource
 @export_group("Pawn")
 @export var pawn_base_impulse: float = 12.0
 @export var pawn_max_impulse: float = 18.0
-@export var pawn_linear_damp: float = 2.5
+## Low damp + frictionless contact = pawns glide like on ice.
+@export var pawn_linear_damp: float = 0.8
+@export_range(0.0, 1.0) var pawn_friction: float = 0.0
 @export var pawn_min_flight_speed: float = 3.0
 @export var pawn_constant_collision_damage: float = 8.0
 @export var pawn_mass: float = 1.0
@@ -50,10 +52,17 @@ extends Resource
 @export_range(0.15, 2.0) var ai_think_interval: float = 0.35
 @export_range(0.0, 1.0) var ai_aim_jitter: float = 0.12
 @export_range(0.4, 1.0) var ai_aggression: float = 0.7
-@export_range(0.5, 1.0) var ai_min_sling_power: float = 0.55
+@export_range(0.1, 1.0) var ai_min_sling_power: float = 0.3
+## Extra slide the AI aims for past the foe (world units).
+@export var ai_overshoot: float = 2.5
 @export var ai_attack_range: float = 1.6
 @export var ai_shield_range: float = 2.2
 @export var ai_edge_margin: float = 1.8
+
+@export_group("Debug")
+## Debug builds only: P1 moves with WASD / arrows (hold = charge, release = launch).
+@export var debug_keyboard_move: bool = true
+@export var debug_key_charge_time: float = 0.6
 
 @export_group("Arena")
 @export var arena_half_size: float = 6.0

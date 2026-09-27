@@ -33,6 +33,8 @@ paths:
 - Release returns stick to center and emits `ev_released(value)`
 - Launch direction = **opposite** of pull (`MaxImpulse * stick_length`)
 - Player may slingshot only when stopped (speed ≤ `pawn_min_flight_speed`) and not stunned/in-flight
+- Ice feel: low `pawn_linear_damp` (`DAMP_MODE_REPLACE`) + frictionless `PhysicsMaterial` on pawn and floor; slide ≈ `impulse / (mass * damp)` (AI power uses this)
+- Debug keyboard (debug builds, `debug_keyboard_move`): `move_*` actions (WASD / arrows) point where to GO; hold = charge, release = launch → converted to joystick pull
 
 ## Avoid
 

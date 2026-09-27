@@ -5,8 +5,9 @@ extends RefCounted
 
 const VOID := Color("#05060F")
 const ABYSS := Color("#070A14")
-const FLOOR := Color("#0C1018")
+const FLOOR := Color("#142230")
 const FLOOR_EDGE := Color("#2A6A78")
+const FLOOR_GRID := Color("#1F4652")
 const GRID_LINE := Color("#151C28")
 
 const BARRIER_OK := Color("#2B7A88")

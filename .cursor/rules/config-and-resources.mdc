@@ -10,7 +10,7 @@ alwaysApply: false
 
 - Schema: `src/common/game_config.gd`
 - Default instance: `src/common/game_config_default.tres`
-- Groups: Pawn, Shield, Attack, Stun/Flight, Player, Match, Feedback, AI, Arena, Impulse modifiers
+- Groups: Pawn, Shield, Attack, Stun/Flight, Player, Match, Feedback, AI, Debug, Arena, Impulse modifiers
 - Battle scenes `@export` the default `.tres` for isolated F6; parents may override later via `ResourceUtils.update_resource`
 
 ## Event buses

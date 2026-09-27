@@ -27,6 +27,7 @@ var input_enabled: bool = false
 var _respawn_left: float = -1.0
 var _aim_vector: Vector2 = Vector2.ZERO
 var _aiming: bool = false
+var _key_charge: float = 0.0
 
 
 func setup(
@@ -70,7 +71,7 @@ func _process(delta: float) -> void:
 		return
 
 	if use_keyboard_fallback and input_enabled:
-		_poll_keyboard()
+		_poll_keyboard(delta)
 		if Input.is_action_just_pressed("attack"):
 			pawn.try_attack()
 		if Input.is_action_just_pressed("shield"):
@@ -82,6 +83,12 @@ func set_input_enabled(on: bool) -> void:
 	if not on:
 		_aiming = false
 		_aim_vector = Vector2.ZERO
+		_key_charge = 0.0
+
+
+func get_aim_vector() -> Vector2:
+	## Current slingshot pull (joystick convention) — for the aim arrow.
+	return _aim_vector if _aiming else Vector2.ZERO
 
 
 func request_attack() -> void:
@@ -106,26 +113,22 @@ func _on_joystick_released(value: Vector2) -> void:
 	_aim_vector = Vector2.ZERO
 
 
-func _poll_keyboard() -> void:
-	## WASD as slingshot pull (release Space to launch is awkward); use hold+release via keys:
-	## hold direction keys to aim, press Enter/E to launch.
-	var pull := Vector2.ZERO
-	if Input.is_key_pressed(KEY_A):
-		pull.x -= 1.0
-	if Input.is_key_pressed(KEY_D):
-		pull.x += 1.0
-	if Input.is_key_pressed(KEY_W):
-		pull.y -= 1.0
-	if Input.is_key_pressed(KEY_S):
-		pull.y += 1.0
-	if pull.length() > 0.0:
-		_aim_vector = pull.limit_length(1.0)
+func _poll_keyboard(delta: float) -> void:
+	## Hold move keys = aim toward that direction and charge; release all = launch.
+	## Keys point where the pawn should GO; converted to joystick pull (opposite).
+	var dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	if dir.length() > 0.0:
+		var charge_time: float = maxf(game_config.debug_key_charge_time, 0.01)
+		_key_charge = minf(_key_charge + delta / charge_time, 1.0)
+		var power := lerpf(0.3, 1.0, _key_charge)
+		_aim_vector = -dir.normalized() * power
 		_aiming = true
-	if Input.is_key_pressed(KEY_E) and _aiming:
-		if pawn:
+	elif _aiming and _key_charge > 0.0:
+		if pawn and is_instance_valid(pawn):
 			pawn.apply_slingshot(_aim_vector)
 		_aiming = false
 		_aim_vector = Vector2.ZERO
+		_key_charge = 0.0
 
 
 func _spawn_pawn() -> void:
