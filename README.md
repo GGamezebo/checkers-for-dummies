@@ -21,6 +21,6 @@ Toggle / tune AI in `GameConfig` (`ai_enabled`, aggression, aim jitter, ranges).
 - `src/game/` — app shell (Menu → Battle → PostBattle)
 - `src/features/` — Pawn, Shield, Attack, Arena, Barrier, Abyss, Joystick, PlayerController, CombatResolver
 - Shared `.tres` buses: `RootEvents`, `GameEvents`, `GameConfig`
-- Agent rules: `.cursor/rules/`
+- Agent rules: `.cursor/rules/` (Cursor), `CLAUDE.md` + `.claude/rules/` (Claude Code) — keep in sync
 - Design reference (AI only): `concepts/` — see `concepts/ART_DIRECTION.md`
 - Full game TZ: [`doc/TZ_CORE.md`](doc/TZ_CORE.md)

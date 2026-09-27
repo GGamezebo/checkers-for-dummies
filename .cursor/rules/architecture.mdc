@@ -50,8 +50,8 @@ Ship and play well on **Mobile** (primary: touch joystick + buttons), **desktop*
 | `concepts/` | AI style/design reference only — never used by the game; see `concepts.mdc` |
 | `doc/` | Project docs (full TZ in Markdown); Godot-blind via `doc/.gdignore` |
 
-Ignore for gameplay work: `addons/`, `.godot/`, `.cursor/`, `doc/`, `concepts/`.
-Export never packs: `concepts/`, `doc/`, `.cursor/`, `.godot/`, `.git/` — keep `concepts/.gdignore`, `doc/.gdignore`.
+Ignore for gameplay work: `addons/`, `.godot/`, `.cursor/`, `.claude/`, `doc/`, `concepts/`.
+Export never packs: `concepts/`, `doc/`, `.cursor/`, `.claude/`, `.godot/`, `.git/` — keep `concepts/.gdignore`, `doc/.gdignore`.
 
 ## Layer contracts
 
@@ -107,6 +107,12 @@ Do not drive win/lose with ad-hoc flags outside the FSM.
 - Shared UI widget → `src/ui/`
 - Generic reusable utility → `core/lib/`
 - Tuning knobs → `GameConfig` (`.gd` + `.tres`), not hardcoded magic numbers in features
+
+## Not implemented yet (don't assume they exist)
+
+- **Localization:** none — UI strings hardcoded in `.tscn`, mixed RU/EN (`Щит`/`Атака`, `PLAY`, `AGAIN`/`MENU`). Don't add unless asked; if asked → built-in `TranslationServer` + CSV (`*.translation` already gitignored).
+- **Tutorial / onboarding:** none (not in `doc/TZ_CORE.md` either).
+- Game design source of truth: `doc/TZ_CORE.md` wins over code on conflict.
 
 ## Cheap-change heuristics
 

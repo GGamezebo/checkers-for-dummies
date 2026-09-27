@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Maintain architecture rules
 
-When a change alters structure, contracts, or placement conventions, update `.cursor/rules/` in the **same** task. Stale rules waste tokens and cause wrong edits.
+When a change alters structure, contracts, or placement conventions, update `.cursor/rules/` in the **same** task — and mirror it in `CLAUDE.md` / `.claude/rules/` (Claude Code uses those; keep both in sync). Stale rules waste tokens and cause wrong edits.
 
 ## Update when
 
@@ -21,6 +21,7 @@ When a change alters structure, contracts, or placement conventions, update `.cu
 - Combat interaction table / pawn lifecycle contracts change
 - Entry point or main-scene wiring changes
 - A convention in these rules is deliberately broken or replaced
+- Localization or tutorial gets added
 
 ## How
 
